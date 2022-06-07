@@ -12,15 +12,11 @@ import concurrent.futures
 from collections import deque
 
 class Environment:
-    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, obs_type='2D', container=None):
+    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, obs_type='2D'):
         self.id = id
-        
-        self.container = container
-        if self.container != None:
-            self.container.register_environment(self)
-
         self.time_res = 1
         self.obs_type = obs_type
+        self.multi_agent = n_BSs > 1
         """
         Space Borders
         """
@@ -32,10 +28,6 @@ class Environment:
         self.MIN_Z = -10
         self.borders = [np.array([self.MIN_X, self.MIN_Y, self.MIN_Z]), np.array([self.MAX_X, self.MAX_Y, self.MAX_Z])]
         self.time = 0
-
-        
-        
-        
         """
         Buildings definition
         """
@@ -132,15 +124,6 @@ class Environment:
         uavs_id = ['uav_' + str(i) for i in range(self.num_uavs)]
         uavs_location = self.num_uavs * [np.array([0., 0., 50.], dtype=np.float64)]
 
-
-        self.frames = deque(maxlen=int(4))
-        for i in range(4):
-            close_users_x = np.array(self.max_user_uav * [0])
-            close_users_y = np.array(self.max_user_uav * [0])
-            close_users_z = np.array(self.max_user_uav * [0])
-            close_users_p = np.array(self.max_user_uav * [0])
-            self.frames.append([close_users_x, close_users_y, close_users_z, close_users_p])
-
         with concurrent.futures.ThreadPoolExecutor() as executor:
             gen_ob_user = executor.map(self.create_user, users_id)
             gen_ob_bs = executor.map(self.create_base_station, BSs_id, BSs_location)
@@ -162,6 +145,19 @@ class Environment:
         self.total_bit_rate = 0
         self.bit_rate_each_ep = []
 
+        self.frames = []
+        self.observation_space = []
+        for i in range(self.num_uavs):
+            self.frames.append(deque(maxlen=int(4)))
+            for _ in range(4):
+                close_users_x = np.array(self.max_user_uav * [0])
+                close_users_y = np.array(self.max_user_uav * [0])
+                close_users_z = np.array(self.max_user_uav * [0])
+                close_users_p = np.array(self.max_user_uav * [0])
+                self.frames[i].append([close_users_x, close_users_y, close_users_z, close_users_p])
+            self.observation_space.append(np.array(self.frames[i]).flatten())
+        self.observation_space = np.array(self.observation_space)
+
     def create_user(self, user_id):
         user_location = np.array([
         np.random.uniform(self.borders[0][0], self.borders[1][0]),
@@ -176,7 +172,7 @@ class Environment:
     def create_uav(self, uav_id, location):
         return UAV(id=uav_id, power=1e-2, initial_location=location, env_borders=self.borders, buildings=self.buildings)
 
-    def observe(self, agent:UAV, obs_range, obs_type='2D'):
+    def observe(self, agent_idx, obs_range, obs_type='2D'):
         """
         Observation of an uav is not just about its location. It can access to nearby users' signals.
         As a result, it can obtain some information about users' location, some property of users and so on.
@@ -189,14 +185,14 @@ class Environment:
         close_users_p = np.array(self.max_user_uav * [0])
         idx = 0
         for user in self.users:
-            if(np.linalg.norm(user.location - agent.location) <= obs_range and idx < self.max_user_uav):
-                close_users_x[idx] = user.location[0]
-                close_users_y[idx] = user.location[1]
-                close_users_z[idx] = user.location[2]
+            if(np.linalg.norm(user.location - self.uavs[agent_idx].location) < obs_range and idx < self.max_user_uav):
+                close_users_x[idx] = self.uavs[agent_idx].location[0] - user.location[0]
+                close_users_y[idx] = self.uavs[agent_idx].location[1] - user.location[1]
+                close_users_z[idx] = self.uavs[agent_idx].location[2] - user.location[2]
                 close_users_p[idx] = user.bit_rate
                 idx += 1
-        self.frames.append([close_users_x, close_users_y, close_users_z, close_users_p])
-        self.frames_ = np.array(self.frames)
+        self.frames[agent_idx].append([close_users_x, close_users_y, close_users_z, close_users_p])
+        self.frames_ = np.array(self.frames[agent_idx])
         if obs_type == '1D':
             self.frames_ = self.frames_.flatten()
         return self.frames_
@@ -215,7 +211,7 @@ class Environment:
         """
         return False
 
-    def reward_function(self, agent:UAV):
+    def reward_function(self, agent_idx):
         reward_area = 0
         reward_connectivity = 0
         reward_bit_rate = 0
@@ -227,17 +223,17 @@ class Environment:
 
         self.total_bit_rate = self.total_bit_rate / self.num_users
 
-        if(self.in_no_fly_zone(agent.location)):
+        if(self.in_no_fly_zone(self.uavs[agent_idx].location)):
             reward_area = 0
 
-        if(self.lost_connectivity(agent.location)):
+        if(self.lost_connectivity(self.uavs[agent_idx].location)):
             reward_connectivity = 0
 
         if(self.total_bit_rate < 0.01 * len(self.users)):
             reward_bit_rate = 0
         
-        if(agent.collision):
-            collision_reward = 0
+        if(self.uavs[agent_idx].collision):
+            collision_reward = -1
 
         step_reward = 0
 
@@ -249,32 +245,28 @@ class Environment:
     def move_uav(self, uav, action, delta_time):
         return uav.move(action, delta_time)
 
-    def step(self, action):
+    def step(self, actions):
         delta_time = np.float64(1)
         self.time += delta_time
-        done = False
+        done = self.num_uavs * [False]
         if(self.time >= 3600):
-            done = True
+            done = self.num_uavs * [True]
 
-        for uav in self.uavs:
-            if(uav.out_of_battery):
-                done = True
+        for uav_idx in range(self.num_uavs):
+            if(self.uavs[uav_idx].out_of_battery):
+                done[uav_idx] = True
 
-        # for building in self.buildings:
-        #     for user in self.users:
-        #         user.inside_building = building.obstacle(user.location)
-        #     for uav in self.uavs:
-        #         uav.hit_building = building.obstacle(uav.location)
-        
+        # if self.multi_agent:
+
         with concurrent.futures.ThreadPoolExecutor() as executor:
             executor.map(self.move_user, self.users, self.num_users * [delta_time])
-            executor.map(self.move_uav, self.uavs, self.num_uavs * [action], self.num_uavs * [delta_time])
-            
-        # for user in self.users:
-        #     user.move(delta_time)
+            executor.map(self.move_uav, self.uavs, actions, self.num_uavs * [delta_time])
 
-        # for uav in self.uavs:
-        #     uav.move(action, delta_time)
+        # else:
+        #     with concurrent.futures.ThreadPoolExecutor() as executor:
+        #         executor.map(self.move_user, self.users, self.num_users * [delta_time])
+        #         executor.map(self.move_uav, self.uavs, self.num_uavs * [actions], self.num_uavs * [delta_time])
+
             
         num_new_connections = self.network.check_user_requests()
         # log.info('%3s new connections has been established' %(num_new_connections))
@@ -282,10 +274,13 @@ class Environment:
         num_hand_off = self.network.hand_off_update()
         # log.info('%5s hand-off has happened' %(num_hand_off))
 
-
-        obs = self.observe(self.uavs[0], self.uav_obs_range, self.obs_type)
-        reward = self.reward_function(self.uavs[0])
-        
+        obs = np.zeros((self.num_uavs, len(self.observation_space[0])))
+        rewards = []
+        for uav_idx in range(self.num_uavs):
+            obs[uav_idx, :] = self.observe(uav_idx, self.uav_obs_range, self.obs_type)
+            rewards.append(self.reward_function(uav_idx))
+        obs = np.array(obs, dtype=np.float32)
+        rewards = np.array(rewards, dtype=np.float32)
         info = {}
         # log_ml.info('Time: %.2f |  reward: %.2f  |  observation: %s  |  action: %s  |  done: %s' %(self.time, reward, obs, action, done))
 
@@ -306,7 +301,7 @@ class Environment:
             done (bool): whether the episode has ended, in which case further step() calls will return undefined results
             info (dict): contains auxiliary diagnostic information (helpful for debugging, logging, and sometimes learning)
         """
-        return [obs, reward, done, info]
+        return [obs, rewards, done, info]
 
     def reset_building(self, building_idx):
         self.buildings[building_idx].reset()
@@ -321,16 +316,7 @@ class Environment:
         self.users[user_idx].reset()
 
     def reset(self):
-        # print('Before', self.uavs[0].location)
         self.time = 0
-        # with concurrent.futures.ThreadPoolExecutor() as executer:
-        #     executer.map(self.reset_building, list(range(len(self.buildings))))
-        #     executer.map(self.reset_bs, list(range(self.num_BSs)))
-        #     executer.map(self.reset_uav, list(range(self.num_uavs)))
-        #     executer.map(self.reset_user, list(range(self.num_users)))
-        # print('After', self.uavs[0].location)
-        
-
         for building in self.buildings:
             building.reset()
 
@@ -347,7 +333,11 @@ class Environment:
 
         # log.info('All objects have been reset')
 
-        return self.observe(self.uavs[0], self.uav_obs_range, self.obs_type)
+        obs = []
+        for uav_idx in range(self.num_uavs):
+            obs.append(self.observe(uav_idx, self.uav_obs_range, self.obs_type))
+        obs = np.array(obs, dtype=np.float32)
+        return obs
 
         
         

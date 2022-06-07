@@ -1,0 +1,86 @@
+import numpy as np
+import datetime
+from pathlib import Path
+from sympy import false
+from metrics import MetricLogger
+from Env.environment import Environment
+import torch
+from Agents.maddpg import MADDPG
+from Agents.buffer import MultiAgentReplayBuffer
+
+def obs_list_to_state_vector(observation):
+    state = np.array([])
+    for obs in observation:
+        state = np.concatenate([state, obs])
+    return state
+
+env = Environment('Env-1', n_users=30, n_uavs=2, n_BSs=0, obs_type='1D')
+
+n_agents = env.num_uavs
+actor_dims = []
+for i in range(n_agents):
+    actor_dims.append(env.observation_space[i].shape[0])
+critic_dims = sum(actor_dims)
+# action space is a list of arrays, assume each agent has same action space
+n_actions = 2
+scenario = 'simple'
+
+maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
+                           fc1=300, fc2=400,  
+                           alpha=0.01, beta=0.01, scenario=scenario,
+                           chkpt_dir='tmp/maddpg/')
+
+memory = MultiAgentReplayBuffer(1000000, critic_dims, actor_dims, 
+                        n_actions, n_agents, batch_size=1024)
+
+
+save_dir = Path('results') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
+save_dir.mkdir(parents=True)
+save_dir_render = save_dir / 'render_trajectory'
+save_dir_render.mkdir(parents=True)
+save_dir_model = save_dir / 'tmp/maddpg/'
+save_dir_model.mkdir(parents=True)
+
+logger = MetricLogger(save_dir)
+episodes = int(1e3)
+
+# logger.record_initials(len(agent.memory), agent.batch_size, agent.exploration_rate_decay, agent.burnin, agent.learn_every, agent.sync_every)
+evaluate = False
+
+if evaluate:
+    maddpg_agents.load_checkpoint()
+
+
+for e in range(episodes):
+    obs = env.reset()
+    done = [False] * n_agents
+    while not any(done):
+        actions = maddpg_agents.choose_action(obs)
+        obs_, reward, done, info = env.step(actions)
+        state = obs_list_to_state_vector(obs)
+        state_ = obs_list_to_state_vector(obs_)
+
+        memory.store_transition(obs, state, actions, reward, obs_, state_, done)
+
+        # if maddpg_agents.curr_step % 1 == 0 and not evaluate:
+        maddpg_agents.learn(memory)
+
+        logger.log_step(reward, 0, 0)
+        obs = obs_
+
+    # if not evaluate:
+    #     if avg_score > best_score:
+    #         maddpg_agents.save_checkpoint()
+    #         best_score = avg_score
+    logger.log_episode()
+    if e % 1 == 0:
+        env.render(e, save_dir_render,"trajectory")
+        mean_bit_rate = np.mean(env.bit_rate_each_ep[-3600:])
+        logger.record(
+            episode=e,
+            epsilon=0,
+            step=maddpg_agents.curr_step,
+            mean_bit_rate=mean_bit_rate
+        )
+
+

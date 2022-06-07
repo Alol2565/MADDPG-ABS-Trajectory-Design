@@ -12,7 +12,7 @@ class UAV(SP_Node):
         self.velocity = np.array([0., 0., 0])
         self.initial_location = deepcopy(initial_location)
         self.initial_velocity = deepcopy(self.velocity)
-        self.max_velocity = np.array([20., 20., 20.])
+        self.max_velocity = np.array([10., 10., 10.])
         self.max_acceleration = np.array([2., 2., 2.])
         self.buildings = buildings
         self.env_borders = env_borders
@@ -50,7 +50,7 @@ class UAV(SP_Node):
         self.out_of_battery = False
         return self
 
-    def move(self, acceleration:np.array, delta_time:np.float64):
+    def move(self, acceleration, delta_time:np.float64):
         """
         Diffrent approach can be used to define the kinematic of UAVs
         """
@@ -59,15 +59,14 @@ class UAV(SP_Node):
         # self.battery -= self.power
         # if(self.battery < 0):
         #     self.out_of_battery = True
-
-        acceleration = np.array([acceleration[0], acceleration[1], 0])
+        acceleration = np.array([acceleration[0], -acceleration[1], 0])
         self.collision = False
 
         if(np.any(np.abs(acceleration) > self.max_acceleration)):
             acceleration = self.max_acceleration
 
         prev_location = deepcopy(self.location)
-        self.location += np.multiply(self.velocity, delta_time) + np.multiply(0.5, acceleration)
+        self.location += np.multiply(self.velocity, delta_time) + 0.5 * np.multiply(acceleration, delta_time**2)
 
         if(not self.valid_location(self.location)):
             self.location = deepcopy(prev_location)
