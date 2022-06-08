@@ -25,13 +25,15 @@ class Agent:
                                             name=self.agent_name+'_target_critic')
 
         self.update_network_parameters(tau=1)
+        self.epsilon = 1.0
+        self.eps_decay = 0.999995
 
     def choose_action(self, observation):
         state = T.tensor(observation, dtype=T.float).to(self.actor.device)
         actions = self.actor.forward(state)
         noise = T.rand(self.n_actions).to(self.actor.device)
-        action = actions + noise
-
+        action = actions + self.epsilon * noise
+        self.epsilon *= self.eps_decay
         return action.detach().cpu().numpy()
 
     def update_network_parameters(self, tau=None):

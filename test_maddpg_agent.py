@@ -51,6 +51,7 @@ if evaluate:
     maddpg_agents.load_checkpoint()
 
 score_history = []
+best_score = 0
 for e in range(episodes):
     obs = env.reset()
     done = [False] * n_agents
@@ -83,7 +84,7 @@ for e in range(episodes):
         mean_bit_rate = np.mean(env.bit_rate_each_ep[-3600:])
         logger.record(
             episode=e,
-            epsilon=0,
+            epsilon=maddpg_agents.agents[0].epsilon,
             step=maddpg_agents.curr_step,
             mean_bit_rate=mean_bit_rate
         )
