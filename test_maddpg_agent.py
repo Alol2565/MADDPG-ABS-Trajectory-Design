@@ -25,21 +25,22 @@ critic_dims = sum(actor_dims)
 n_actions = 2
 scenario = 'simple'
 
-maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
-                           fc1=128, fc2=256,  
-                           alpha=0.01, beta=0.01, scenario=scenario,
-                           chkpt_dir='tmp/maddpg/')
-
-memory = MultiAgentReplayBuffer(1000000, critic_dims, actor_dims, 
-                        n_actions, n_agents, batch_size=1024)
-
 
 save_dir = Path('results') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
 save_dir_render = save_dir / 'render_trajectory'
 save_dir_render.mkdir(parents=True)
-save_dir_model = save_dir / 'tmp/maddpg/'
-save_dir_model.mkdir(parents=True)
+
+maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
+                           fc1=128, fc2=256,  
+                           alpha=0.01, beta=0.01, scenario=scenario,
+                           chkpt_dir=str(save_dir) + '/tmp/maddpg/')
+
+memory = MultiAgentReplayBuffer(1000000, critic_dims, actor_dims, 
+                        n_actions, n_agents, batch_size=1024)
+
+
+
 
 logger = MetricLogger(save_dir)
 episodes = int(1e3)

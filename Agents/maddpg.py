@@ -2,6 +2,7 @@ import torch as T
 import torch.nn.functional as F
 from Agents.agent import Agent
 import numpy as np
+from pathlib import Path
 
 class MADDPG:
     def __init__(self, actor_dims, critic_dims, n_agents, n_actions, 
@@ -11,6 +12,8 @@ class MADDPG:
         self.n_agents = n_agents
         self.n_actions = n_actions
         chkpt_dir += scenario 
+        mk_chkpt_dir = Path(chkpt_dir)
+        mk_chkpt_dir.mkdir(parents=True)
         for agent_idx in range(self.n_agents):
             self.agents.append(Agent(actor_dims[agent_idx], critic_dims,  
                             n_actions, n_agents, agent_idx, alpha=alpha, beta=beta,
