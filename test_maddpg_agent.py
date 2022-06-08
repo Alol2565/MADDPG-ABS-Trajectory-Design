@@ -26,7 +26,7 @@ n_actions = 2
 scenario = 'simple'
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
-                           fc1=300, fc2=400,  
+                           fc1=128, fc2=256,  
                            alpha=0.01, beta=0.01, scenario=scenario,
                            chkpt_dir='tmp/maddpg/')
 
@@ -50,10 +50,11 @@ evaluate = False
 if evaluate:
     maddpg_agents.load_checkpoint()
 
-
+score_history = []
 for e in range(episodes):
     obs = env.reset()
     done = [False] * n_agents
+    score = 0
     while not any(done):
         actions = maddpg_agents.choose_action(obs)
         obs_, reward, done, info = env.step(actions)
@@ -62,17 +63,21 @@ for e in range(episodes):
 
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
 
-        # if maddpg_agents.curr_step % 1 == 0 and not evaluate:
-        maddpg_agents.learn(memory)
+        if maddpg_agents.curr_step % 100 == 0 and not evaluate:
+            maddpg_agents.learn(memory)
 
         logger.log_step(reward, 0, 0)
         obs = obs_
 
-    # if not evaluate:
-    #     if avg_score > best_score:
-    #         maddpg_agents.save_checkpoint()
-    #         best_score = avg_score
+        score += sum(reward)
+    score_history.append(score)
+    avg_score = np.mean(score_history[-100:])
+    if not evaluate:
+        if avg_score > best_score:
+            maddpg_agents.save_checkpoint()
+            best_score = avg_score
     logger.log_episode()
+    
     if e % 1 == 0:
         env.render(e, save_dir_render,"trajectory")
         mean_bit_rate = np.mean(env.bit_rate_each_ep[-3600:])

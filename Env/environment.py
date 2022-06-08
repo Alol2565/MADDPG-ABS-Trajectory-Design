@@ -233,7 +233,7 @@ class Environment:
             reward_bit_rate = 0
         
         if(self.uavs[agent_idx].collision):
-            collision_reward = -1
+            collision_reward = 0
 
         step_reward = 0
 
