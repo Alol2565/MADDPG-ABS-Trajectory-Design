@@ -1,5 +1,8 @@
+from traceback import print_tb
 from typing import List
 import matplotlib.pyplot as plt
+from pyparsing import originalTextFor
+from traitlets import observe
 # from logger import log, log_ml
 from Env.network import Network
 from Env.BaseStations.base_station import Base_Station
@@ -117,12 +120,12 @@ class Environment:
         """
         UAVs definition
         """
-        self.uav_obs_range = 140
-        self.max_user_uav = 4
+        self.uav_obs_range = 10000
+        self.max_user_uav = 5
         self.num_uavs = n_uavs
         self.uavs:List[UAV] = self.num_uavs * [None]
         uavs_id = ['uav_' + str(i) for i in range(self.num_uavs)]
-        uavs_location = self.num_uavs * [np.array([0., 0., 50.], dtype=np.float64)]
+        uavs_location = self.num_uavs * [np.array([50., -50., 50.], dtype=np.float64)]
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             gen_ob_user = executor.map(self.create_user, users_id)
@@ -145,18 +148,23 @@ class Environment:
         self.total_bit_rate = 0
         self.bit_rate_each_ep = []
 
-        self.frames = []
-        self.observation_space = []
-        for i in range(self.num_uavs):
-            self.frames.append(deque(maxlen=int(4)))
-            for _ in range(4):
-                close_users_x = np.array(self.max_user_uav * [0])
-                close_users_y = np.array(self.max_user_uav * [0])
-                close_users_z = np.array(self.max_user_uav * [0])
-                close_users_p = np.array(self.max_user_uav * [0])
-                self.frames[i].append([close_users_x, close_users_y, close_users_z, close_users_p])
-            self.observation_space.append(np.array(self.frames[i]).flatten())
-        self.observation_space = np.array(self.observation_space)
+        # self.frames = []
+        # self.observation_space = []
+        # for i in range(self.num_uavs):
+        #     self.frames.append(deque(maxlen=int(6)))
+        #     for _ in range(1):
+        #         close_users_x = np.array(self.max_user_uav * [0])
+        #         close_users_y = np.array(self.max_user_uav * [0])
+        #         close_users_z = np.array(self.max_user_uav * [0])
+        #         close_users_p = np.array(self.max_user_uav * [0])
+        #     self.frames[i].append([close_users_x, close_users_y, close_users_z, close_users_p])
+        #     self.frames[i].append([self.uavs[i].location[0], self.uavs[i].location[1], self.uavs[i].location[2], 0])
+        #     self.frames[i].append([self.uavs[i].velocity[0], self.uavs[i].velocity[1], self.uavs[i].velocity[2], 0])
+
+        # self.frames = []
+        # self.observation_space = []
+        self.frames = np.ndarray(shape=(self.num_uavs, self.max_user_uav + 2, 3), dtype=np.float64)
+        self.observation_space = np.array(self.frames[0,:]).flatten()
 
     def create_user(self, user_id):
         user_location = np.array([
@@ -172,30 +180,57 @@ class Environment:
     def create_uav(self, uav_id, location):
         return UAV(id=uav_id, power=1e-2, initial_location=location, env_borders=self.borders, buildings=self.buildings)
 
+    # def observe(self, agent_idx, obs_range, obs_type='2D'):
+    #     """
+    #     Observation of an uav is not just about its location. It can access to nearby users' signals.
+    #     As a result, it can obtain some information about users' location, some property of users and so on.
+    #     I'm wondering that these ignored information can be in the help of training. I mean it can increase our rate of 
+    #     convergence or imporve our convergence overall. 
+    #     """
+    #     close_users_x = np.array(self.max_user_uav * [0])
+    #     close_users_y = np.array(self.max_user_uav * [0])
+    #     close_users_z = np.array(self.max_user_uav * [0])
+    #     close_users_p = np.array(self.max_user_uav * [0])
+    #     idx = 0
+    #     for user in self.users:
+    #         if(np.linalg.norm(user.location - self.uavs[agent_idx].location) < obs_range and idx < self.max_user_uav):
+    #             close_users_x[idx] = user.location[0]
+    #             close_users_y[idx] = user.location[1]
+    #             close_users_z[idx] = user.location[2]
+    #             close_users_p[idx] = user.bit_rate
+    #             idx += 1
+    #     self.frames[agent_idx].append([close_users_x, close_users_y, close_users_z, close_users_p])
+    #     self.frames[agent_idx].append([self.uavs[agent_idx].location[0], self.uavs[agent_idx].location[1], self.uavs[agent_idx].location[2], 0])
+    #     self.frames[agent_idx].append([self.uavs[agent_idx].velocity[0], self.uavs[agent_idx].velocity[1], self.uavs[agent_idx].velocity[2], 0])
+    #     self.frames_ = np.array(self.frames[agent_idx])
+    #     if obs_type == '1D':
+    #         self.frames_ = self.frames_.flatten()
+    #     return self.frames_
+
+    # def observe(self, agent_idx, obs_range, obs_type='2D'):
+    #     idx = 0 
+    #     for user in self.users:
+    #         if(np.linalg.norm(user.location - self.uavs[agent_idx].location) < obs_range and idx < self.max_user_uav):
+    #             self.frames[agent_idx][idx] = user.location
+    #             idx += 1
+    #     self.frames[agent_idx][self.max_user_uav] = self.uavs[agent_idx].location
+    #     self.frames[agent_idx][self.max_user_uav + 1] = self.uavs[agent_idx].velocity
+        
+    #     return self.frames[agent_idx].flatten()
+
     def observe(self, agent_idx, obs_range, obs_type='2D'):
-        """
-        Observation of an uav is not just about its location. It can access to nearby users' signals.
-        As a result, it can obtain some information about users' location, some property of users and so on.
-        I'm wondering that these ignored information can be in the help of training. I mean it can increase our rate of 
-        convergence or imporve our convergence overall. 
-        """
-        close_users_x = np.array(self.max_user_uav * [0])
-        close_users_y = np.array(self.max_user_uav * [0])
-        close_users_z = np.array(self.max_user_uav * [0])
-        close_users_p = np.array(self.max_user_uav * [0])
-        idx = 0
+        distances = []
         for user in self.users:
-            if(np.linalg.norm(user.location - self.uavs[agent_idx].location) < obs_range and idx < self.max_user_uav):
-                close_users_x[idx] = self.uavs[agent_idx].location[0] - user.location[0]
-                close_users_y[idx] = self.uavs[agent_idx].location[1] - user.location[1]
-                close_users_z[idx] = self.uavs[agent_idx].location[2] - user.location[2]
-                close_users_p[idx] = user.bit_rate
-                idx += 1
-        self.frames[agent_idx].append([close_users_x, close_users_y, close_users_z, close_users_p])
-        self.frames_ = np.array(self.frames[agent_idx])
-        if obs_type == '1D':
-            self.frames_ = self.frames_.flatten()
-        return self.frames_
+            distances.append(np.linalg.norm(user.location - self.uavs[agent_idx].location))
+        sorted_distances = np.argsort(distances)
+        close_users_idx = sorted_distances[:self.max_user_uav]
+        for i in range(self.max_user_uav):
+            self.frames[agent_idx][i] = self.users[close_users_idx[i]].location
+        self.frames[agent_idx][self.max_user_uav] = self.uavs[agent_idx].location
+        self.frames[agent_idx][self.max_user_uav + 1] = self.uavs[agent_idx].velocity
+        return self.frames[agent_idx].flatten()
+
+       
         
     def in_no_fly_zone(self, agent_location):
         """
@@ -274,7 +309,8 @@ class Environment:
         num_hand_off = self.network.hand_off_update()
         # log.info('%5s hand-off has happened' %(num_hand_off))
 
-        obs = np.zeros((self.num_uavs, len(self.observation_space[0])))
+        # obs = np.zeros((self.num_uavs, len(self.observation_space[0])))
+        obs = np.ndarray(shape=(self.num_uavs, len(self.observation_space)))
         rewards = []
         for uav_idx in range(self.num_uavs):
             obs[uav_idx, :] = self.observe(uav_idx, self.uav_obs_range, self.obs_type)
@@ -283,25 +319,9 @@ class Environment:
         rewards = np.array(rewards, dtype=np.float32)
         info = {}
         # log_ml.info('Time: %.2f |  reward: %.2f  |  observation: %s  |  action: %s  |  done: %s' %(self.time, reward, obs, action, done))
-
         self.bit_rate_each_ep.append(self.total_bit_rate)
-        """
-        Run one timestep of the environment's dynamics. When end of
-        episode is reached, you are responsible for calling `reset()`
-        to reset this environment's state.
-
-        Accepts an action and returns a tuple (observation, reward, done, info).
-
-        Args:
-            action (object): an action provided by the agent
-
-        Returns:
-            observation (object): agent's observation of the current environment
-            reward (float) : amount of reward returned after previous action
-            done (bool): whether the episode has ended, in which case further step() calls will return undefined results
-            info (dict): contains auxiliary diagnostic information (helpful for debugging, logging, and sometimes learning)
-        """
         return [obs, rewards, done, info]
+
 
     def reset_building(self, building_idx):
         self.buildings[building_idx].reset()

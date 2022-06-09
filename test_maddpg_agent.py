@@ -19,7 +19,7 @@ env = Environment('Env-1', n_users=30, n_uavs=2, n_BSs=0, obs_type='1D')
 n_agents = env.num_uavs
 actor_dims = []
 for i in range(n_agents):
-    actor_dims.append(env.observation_space[i].shape[0])
+    actor_dims.append(env.observation_space.shape[0])
 critic_dims = sum(actor_dims)
 # action space is a list of arrays, assume each agent has same action space
 n_actions = 2
@@ -39,12 +39,8 @@ maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions,
 memory = MultiAgentReplayBuffer(1000000, critic_dims, actor_dims, 
                         n_actions, n_agents, batch_size=1024)
 
-
-
-
 logger = MetricLogger(save_dir)
 episodes = int(1e3)
-
 # logger.record_initials(len(agent.memory), agent.batch_size, agent.exploration_rate_decay, agent.burnin, agent.learn_every, agent.sync_every)
 evaluate = False
 

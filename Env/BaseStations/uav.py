@@ -59,7 +59,7 @@ class UAV(SP_Node):
         # self.battery -= self.power
         # if(self.battery < 0):
         #     self.out_of_battery = True
-        acceleration = np.array([acceleration[0], -acceleration[1], 0])
+        acceleration = np.array([acceleration[0], acceleration[1], 0])
         self.collision = False
 
         if(np.any(np.abs(acceleration) > self.max_acceleration)):
@@ -82,5 +82,21 @@ class UAV(SP_Node):
         return self
     
 
+    # def move(self, velocity, delta_time:np.float64):
+    #     velocity = 5 * np.array([velocity[0], velocity[1], 0])
+    #     self.collision = False
+
+    #     if(np.any(np.abs(velocity) > self.max_velocity)):
+    #         velocity = self.max_velocity
+        
+    #     prev_location = deepcopy(self.location)
+    #     self.location += np.multiply(self.velocity, delta_time) 
+
+    #     if(not self.valid_location(self.location)):
+    #         self.location = deepcopy(prev_location)
+    #         self.collision = True
+        
+    #     self.trajectory.append(deepcopy(self.location))
+    #     return self
 
     

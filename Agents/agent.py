@@ -11,6 +11,7 @@ class Agent:
         self.tau = tau
         self.n_actions = n_actions
         self.agent_name = 'agent_%s' % agent_idx
+
         
         self.actor = ActorNetwork(alpha, actor_dims, fc1, fc2, n_actions, 
                                   chkpt_dir=chkpt_dir,  name=self.agent_name+'_actor')
