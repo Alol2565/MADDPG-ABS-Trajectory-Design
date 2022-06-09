@@ -33,6 +33,15 @@ class User(User_Node):
     def reset(self):
         self.location = deepcopy(self.initial_location)
         self.power = deepcopy(self.initial_power)
+        self.request_to_connect = True
+        self.connected = False
+        self.connected_to:string = 'None'
+        self.bit_rate:np.float32 = 0
+        self.bit_rate_in_time = []
+        self.mean_bit_rate = 0
+        self.inside_building = False
+        self.current_snr = 0
+        self.service_provider:SP_Node = None
 
 
     def check_instant_rate(self):

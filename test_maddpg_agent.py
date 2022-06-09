@@ -66,7 +66,8 @@ for e in range(episodes):
         if maddpg_agents.curr_step % 100 == 0 and not evaluate:
             maddpg_agents.learn(memory)
 
-        logger.log_step(reward, 0, 0)
+        logger.log_step(sum(reward), 0, 0)
+
         obs = obs_
 
         score += sum(reward)
