@@ -14,7 +14,7 @@ def obs_list_to_state_vector(observation):
         state = np.concatenate([state, obs])
     return state
 
-env = Environment('Env-1', n_users=30, n_uavs=2, n_BSs=0, obs_type='1D')
+env = Environment('Env-1', n_users=5, n_uavs=2, n_BSs=0, obs_type='1D')
 
 n_agents = env.num_uavs
 actor_dims = []
@@ -51,6 +51,8 @@ score_history = []
 best_score = 0
 for e in range(episodes):
     obs = env.reset()
+    for agent in maddpg_agents.agents:
+        agent.noise.reset()
     done = [False] * n_agents
     score = 0
     while not any(done):

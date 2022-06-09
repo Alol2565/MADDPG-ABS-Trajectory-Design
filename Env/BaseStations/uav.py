@@ -69,7 +69,12 @@ class UAV(SP_Node):
         self.location += np.multiply(self.velocity, delta_time) + 0.5 * np.multiply(acceleration, delta_time**2)
 
         if(not self.valid_location(self.location)):
-            self.location = deepcopy(prev_location)
+            if(self.location[0] < self.env_borders[0][0] or self.location[0] > self.env_borders[1][0]):
+                self.velocity[0] = -self.velocity[0]
+                self.location = deepcopy(prev_location)
+            if(self.location[1] < self.env_borders[0][1] or self.location[1] > self.env_borders[1][1]):
+                self.velocity[1] = -self.velocity[1]
+                self.location = deepcopy(prev_location)
             self.collision = True
 
         prev_velocity = deepcopy(self.velocity)

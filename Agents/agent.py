@@ -2,6 +2,7 @@ from traceback import print_tb
 import torch as T
 from Agents.networks import ActorNetwork, CriticNetwork
 import numpy as np
+from Agents.noise import OUActionNoise
 
 class Agent:
     def __init__(self, actor_dims, critic_dims, n_actions, n_agents, agent_idx, chkpt_dir,
@@ -29,13 +30,15 @@ class Agent:
         self.update_network_parameters(tau=1)
         self.epsilon = 1.0
         self.eps_decay = 0.999995
+        self.noise = OUActionNoise(mu=np.zeros(n_actions), sigma=0.1)
 
     def choose_action(self, observation):
         state = T.tensor(observation, dtype=T.float).to(self.actor.device)
         actions = self.actor.forward(state)
-        noise = T.rand(self.n_actions).to(self.actor.device)
-        action = actions + self.epsilon * noise
+        # noise = T.rand(self.n_actions).to(self.actor.device)
+        # action = actions + self.epsilon * noise
         # self.epsilon *= self.eps_decay
+        action = actions + T.tensor(self.noise(), dtype=T.float).to(self.actor.device)
         return action.detach().cpu().numpy()
 
     def update_network_parameters(self, tau=None):
