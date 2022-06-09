@@ -176,7 +176,7 @@ class Network:
                 # user.bit_rate = instant_rate(user.service_provider, user, interference, self.f_c, self.eta, h_tilde=1)
                 if(user.bit_rate == 0):
                     self.disconnect_user(user.service_provider, user)
-                user.check_instant_rate()
+            user.check_instant_rate()
 
     
     def find_better_node(self, user:User):

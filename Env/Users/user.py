@@ -20,7 +20,9 @@ class User(User_Node):
         self.request_to_connect = True
         self.connected = False
         self.connected_to:string = 'None'
-        self.bit_rate:np.float64 = 0
+        self.bit_rate:np.float32 = 0
+        self.bit_rate_in_time = []
+        self.mean_bit_rate = 0
         self.inside_building = False
         self.current_snr = 0
         self.service_provider:SP_Node = None
@@ -35,8 +37,12 @@ class User(User_Node):
 
     def check_instant_rate(self):
         if(self.connected):
+            self.bit_rate_in_time.append(self.bit_rate)
+            self.mean_bit_rate = np.mean(self.bit_rate_in_time)
             # log.info('%10s is connected to %10s with rate: %20s' %(self.id, self.connected_to, self.bit_rate))
             return self.bit_rate
+        self.bit_rate_in_time.append(0)
+        self.mean_bit_rate = np.mean(self.bit_rate_in_time)
         return 0
 
     # def collision_occured(self, location):

@@ -441,9 +441,9 @@ class Environment:
                     horizontalalignment='center', verticalalignment='center',
                     fontsize=7, color='#9B9B9B')
 
-            for uav in self.uavs:
-                uav.trajectory = np.array(uav.trajectory)
-                plt.plot(uav.trajectory[:,0], uav.trajectory[:,1], 'b--')
+            for i in range(self.num_uavs):
+                self.uavs[i].trajectory = np.array(self.uavs[i].trajectory)
+                plt.plot(self.uavs[i].trajectory[:,0], self.uavs[i].trajectory[:,1], (0.1, i / self.num_uavs, 0.5))
                 # plt.text(uav.location[0],uav.location[1] - 3, uav.id,
                 #     horizontalalignment='center', verticalalignment='center',
                 #     fontsize=7, color='blue')
@@ -455,7 +455,7 @@ class Environment:
                 if(user.connected):
                     user_color = 'green'
                 plt.scatter(pt_x, pt_y, c=user_color, marker =".", linewidths=0.05, alpha=1)
-                plt.text(user.location[0],user.location[1] - 5, user.id +' | ' + user.connected_to,
+                plt.text(user.location[0],user.location[1] - 5, user.id +' | ' + user.connected_to + ' | ' + str(user.mean_bit_rate),
                     horizontalalignment='center', verticalalignment='center',
                     fontsize=6, color=user_color)
 
