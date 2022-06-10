@@ -36,7 +36,7 @@ maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions,
                            alpha=0.01, beta=0.01, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
-memory = MultiAgentReplayBuffer(1000000, critic_dims, actor_dims, 
+memory = MultiAgentReplayBuffer(100000, critic_dims, actor_dims, 
                         n_actions, n_agents, batch_size=1024)
 
 logger = MetricLogger(save_dir)

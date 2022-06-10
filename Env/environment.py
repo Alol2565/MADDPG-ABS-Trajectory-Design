@@ -286,7 +286,7 @@ class Environment:
         delta_time = np.float64(1)
         self.time += delta_time
         done = self.num_uavs * [False]
-        if(self.time >= 10):
+        if(self.time >= 3600):
             done = self.num_uavs * [True]
 
         for uav_idx in range(self.num_uavs):
