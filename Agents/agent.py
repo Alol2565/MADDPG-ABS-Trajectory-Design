@@ -28,7 +28,8 @@ class Agent:
                                             name=self.agent_name+'_target_critic')
 
         self.update_network_parameters(tau=1)
-        self.noise = OUActionNoise(mu=np.zeros(n_actions), sigma=0.1)
+        self.epsilon = 1
+        self.noise = OUActionNoise(mu=np.zeros(n_actions), sigma=0.2)
 
     def choose_action(self, observation):
         state = T.tensor(observation, dtype=T.float).to(self.actor.device)
