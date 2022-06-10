@@ -12,8 +12,8 @@ class UAV(SP_Node):
         self.velocity = np.array([0., 0., 0])
         self.initial_location = deepcopy(initial_location)
         self.initial_velocity = deepcopy(self.velocity)
-        self.max_velocity = np.array([50., 50., 50.])
-        self.max_acceleration = np.array([5., 5., 5.])
+        self.max_velocity = np.array([30., 30., 30.])
+        self.max_acceleration = np.array([2., 2., 2.])
         self.buildings = buildings
         self.env_borders = env_borders
         self.hit_building = False
