@@ -13,7 +13,6 @@ class OUActionNoise():
         x = self.x_prev + self.theta * (self.mu - self.x_prev) * self.dt + \
                 self.sigma * np.sqrt(self.dt) * np.random.normal(size=self.mu.shape)
         self.x_prev = x
-
         return x
 
     def reset(self):

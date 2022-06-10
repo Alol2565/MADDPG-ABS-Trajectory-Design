@@ -16,6 +16,7 @@ class SP_Node:
     def reset(self):
         self.location = deepcopy(self.initial_location)
         self.power = deepcopy(self.initial_power)
+        self.users = []
 
     def append_user(self, user):
         self.users.append(user)

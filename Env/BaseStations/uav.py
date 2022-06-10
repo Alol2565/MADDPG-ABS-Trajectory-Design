@@ -12,8 +12,8 @@ class UAV(SP_Node):
         self.velocity = np.array([0., 0., 0])
         self.initial_location = deepcopy(initial_location)
         self.initial_velocity = deepcopy(self.velocity)
-        self.max_velocity = np.array([10., 10., 10.])
-        self.max_acceleration = np.array([2., 2., 2.])
+        self.max_velocity = np.array([50., 50., 50.])
+        self.max_acceleration = np.array([5., 5., 5.])
         self.buildings = buildings
         self.env_borders = env_borders
         self.hit_building = False
@@ -22,6 +22,7 @@ class UAV(SP_Node):
         self.trajectory.append(deepcopy(self.location))
         self.battery = 1000
         self.out_of_battery = False
+        self.users = []
 
     def collision_occured(self, location):
         for building in self.buildings:
@@ -48,6 +49,7 @@ class UAV(SP_Node):
         self.collision = False
         self.battery = 10
         self.out_of_battery = False
+        self.users = []
         return self
 
     def move(self, acceleration, delta_time:np.float64):
@@ -62,8 +64,12 @@ class UAV(SP_Node):
         acceleration = np.array([acceleration[0], acceleration[1], 0])
         self.collision = False
 
-        if(np.any(np.abs(acceleration) > self.max_acceleration)):
-            acceleration = self.max_acceleration
+
+        for i in range(len(acceleration)):
+            if(acceleration[i] > self.max_acceleration[i]):
+                acceleration[i] = self.max_acceleration[i]
+            elif(acceleration[i] < -self.max_acceleration[i]):
+                acceleration[i] = -self.max_acceleration[i]
 
         prev_location = deepcopy(self.location)
         self.location += np.multiply(self.velocity, delta_time) + 0.5 * np.multiply(acceleration, delta_time**2)
@@ -77,11 +83,13 @@ class UAV(SP_Node):
                 self.location = deepcopy(prev_location)
             self.collision = True
 
-        prev_velocity = deepcopy(self.velocity)
         self.velocity += np.multiply(acceleration, delta_time)
 
-        if(np.any(np.abs(self.velocity) > self.max_velocity)):
-            self.velocity = deepcopy(prev_velocity)
+        for i in range(len(self.velocity)):
+            if(self.velocity[i] > self.max_velocity[i]):
+                self.velocity[i] = self.max_velocity[i]
+            elif(self.velocity[i] < -self.max_velocity[i]):
+                self.velocity[i] = -self.max_velocity[i]
         
         self.trajectory.append(deepcopy(self.location))
         return self

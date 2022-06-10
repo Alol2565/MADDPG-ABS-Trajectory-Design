@@ -11,8 +11,11 @@ class Base_Station(SP_Node):
         self.id = deepcopy(id)
         self.power = deepcopy(power)
         self.location = deepcopy(initial_location)
+        self.users = [] 
+        
 
     def reset(self):
+        self.users = []
         return super().reset()
         
     ### To Do 

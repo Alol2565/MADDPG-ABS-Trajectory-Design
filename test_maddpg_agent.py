@@ -52,7 +52,7 @@ best_score = 0
 for e in range(episodes):
     obs = env.reset()
     for agent in maddpg_agents.agents:
-        agent.noise.reset()
+        agent.noise.sigma *= 0.95
     done = [False] * n_agents
     score = 0
     while not any(done):

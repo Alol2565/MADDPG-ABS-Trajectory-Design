@@ -29,12 +29,13 @@ class Agent:
 
         self.update_network_parameters(tau=1)
         self.epsilon = 1
-        self.noise = OUActionNoise(mu=np.zeros(n_actions), sigma=0.2)
+        self.noise = OUActionNoise(mu=np.zeros(n_actions), sigma=1, theta=0.2, dt=1, x0=None)
 
     def choose_action(self, observation):
         state = T.tensor(observation, dtype=T.float).to(self.actor.device)
         actions = self.actor.forward(state)
         action = actions + T.tensor(self.noise(), dtype=T.float).to(self.actor.device)
+        print(action - actions)
         return action.detach().cpu().numpy()
 
     def update_network_parameters(self, tau=None):
