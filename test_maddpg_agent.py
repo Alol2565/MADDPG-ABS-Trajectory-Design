@@ -14,7 +14,7 @@ def obs_list_to_state_vector(observation):
         state = np.concatenate([state, obs])
     return state
 
-env = Environment('Env-1', n_users=30, n_uavs=2, n_BSs=0, obs_type='1D')
+env = Environment('Env-1', n_users=10, n_uavs=2, n_BSs=0, obs_type='1D')
 
 n_agents = env.num_uavs
 actor_dims = []
@@ -60,6 +60,7 @@ for e in range(episodes):
         obs_, reward, done, info = env.step(actions)
         state = obs_list_to_state_vector(obs)
         state_ = obs_list_to_state_vector(obs_)
+        print(reward)
 
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
 

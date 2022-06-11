@@ -12,8 +12,8 @@ class UAV(SP_Node):
         self.velocity = np.array([0., 0., 0])
         self.initial_location = deepcopy(initial_location)
         self.initial_velocity = deepcopy(self.velocity)
-        self.max_velocity = np.array([30., 30., 30.])
-        self.max_acceleration = np.array([2., 2., 2.])
+        self.max_velocity = np.array([9., 9., 9.])
+        self.max_acceleration = np.array([1.5, 1.5, 1.5])
         self.buildings = buildings
         self.env_borders = env_borders
         self.hit_building = False
@@ -93,23 +93,4 @@ class UAV(SP_Node):
         
         self.trajectory.append(deepcopy(self.location))
         return self
-    
-
-    # def move(self, velocity, delta_time:np.float64):
-    #     velocity = 5 * np.array([velocity[0], velocity[1], 0])
-    #     self.collision = False
-
-    #     if(np.any(np.abs(velocity) > self.max_velocity)):
-    #         velocity = self.max_velocity
-        
-    #     prev_location = deepcopy(self.location)
-    #     self.location += np.multiply(self.velocity, delta_time) 
-
-    #     if(not self.valid_location(self.location)):
-    #         self.location = deepcopy(prev_location)
-    #         self.collision = True
-        
-    #     self.trajectory.append(deepcopy(self.location))
-    #     return self
-
     

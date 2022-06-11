@@ -253,9 +253,12 @@ class Environment:
         self.total_bit_rate = 0
         collision_reward = 0
         uav_total_bit_rate = 0
+        connected_users = 0
 
         for user in self.users:
             self.total_bit_rate += user.bit_rate
+            if user.bit_rate > 0:
+                connected_users += 1
 
         self.total_bit_rate = 0.1 * self.total_bit_rate / self.num_users
 
@@ -269,12 +272,12 @@ class Environment:
             reward_bit_rate = 0
         
         if(self.uavs[agent_idx].collision):
-            collision_reward = -0.2
+            collision_reward = -0.1
         
         for user in self.uavs[agent_idx].users:
             uav_total_bit_rate += user.bit_rate
         step_reward = 0.0
-        return reward_area + reward_connectivity + reward_bit_rate + self.total_bit_rate + step_reward + collision_reward + uav_total_bit_rate
+        return (connected_users + len(self.uavs[agent_idx].users)) / self.num_users
 
     def move_user(self, user, delta_time):
         return user.move(delta_time)
