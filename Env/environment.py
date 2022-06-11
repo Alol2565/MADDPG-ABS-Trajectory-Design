@@ -15,11 +15,12 @@ import concurrent.futures
 from collections import deque
 
 class Environment:
-    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, obs_type='2D'):
+    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, flight_time=3600,obs_type='2D'):
         self.id = id
         self.time_res = 1
         self.obs_type = obs_type
         self.multi_agent = n_BSs > 1
+        self.flight_time = flight_time
         """
         Space Borders
         """
@@ -272,12 +273,12 @@ class Environment:
             reward_bit_rate = 0
         
         if(self.uavs[agent_idx].collision):
-            collision_reward = -0.1
+            collision_reward = -100
         
         for user in self.uavs[agent_idx].users:
             uav_total_bit_rate += user.bit_rate
         step_reward = 0.0
-        return (connected_users + len(self.uavs[agent_idx].users)) / self.num_users
+        return collision_reward + (connected_users + len(self.uavs[agent_idx].users)) / self.num_users
 
     def move_user(self, user, delta_time):
         return user.move(delta_time)
@@ -289,7 +290,7 @@ class Environment:
         delta_time = np.float64(1)
         self.time += delta_time
         done = self.num_uavs * [False]
-        if(self.time >= 3600):
+        if(self.time >= self.flight_time):
             done = self.num_uavs * [True]
 
         for uav_idx in range(self.num_uavs):

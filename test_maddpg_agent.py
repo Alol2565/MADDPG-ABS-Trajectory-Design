@@ -14,7 +14,7 @@ def obs_list_to_state_vector(observation):
         state = np.concatenate([state, obs])
     return state
 
-env = Environment('Env-1', n_users=10, n_uavs=2, n_BSs=0, obs_type='1D')
+env = Environment('Env-1', n_users=30, n_uavs=2, n_BSs=0, flight_time=700,obs_type='1D')
 
 n_agents = env.num_uavs
 actor_dims = []
@@ -85,7 +85,7 @@ for e in range(episodes):
         mean_bit_rate = np.mean(env.bit_rate_each_ep[-3600:])
         logger.record(
             episode=e,
-            epsilon=maddpg_agents.agents[0].epsilon,
+            epsilon=maddpg_agents.agents[0].noise.sigma,
             step=maddpg_agents.curr_step,
             mean_bit_rate=mean_bit_rate
         )
