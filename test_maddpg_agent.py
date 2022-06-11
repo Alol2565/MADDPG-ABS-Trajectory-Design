@@ -60,7 +60,6 @@ for e in range(episodes):
         obs_, reward, done, info = env.step(actions)
         state = obs_list_to_state_vector(obs)
         state_ = obs_list_to_state_vector(obs_)
-        print(reward)
 
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
 
