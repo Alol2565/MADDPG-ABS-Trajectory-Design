@@ -14,7 +14,7 @@ def obs_list_to_state_vector(observation):
         state = np.concatenate([state, obs])
     return state
 
-env = Environment('Env-1', n_users=30, n_uavs=2, n_BSs=0, flight_time=700,obs_type='1D')
+env = Environment('Env-1', n_users=40, n_uavs=2, n_BSs=2, flight_time=500,obs_type='1D')
 
 n_agents = env.num_uavs
 actor_dims = []
@@ -52,7 +52,7 @@ best_score = 0
 for e in range(episodes):
     obs = env.reset()
     for agent in maddpg_agents.agents:
-        agent.noise.sigma *= 0.95
+        agent.noise.sigma *= 0.999
     done = [False] * n_agents
     score = 0
     while not any(done):
@@ -63,7 +63,7 @@ for e in range(episodes):
 
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
 
-        if maddpg_agents.curr_step % 100 == 0 and not evaluate:
+        if maddpg_agents.curr_step % 32 == 0 and not evaluate:
             maddpg_agents.learn(memory)
 
         logger.log_step(sum(reward), 0, 0)
@@ -72,7 +72,7 @@ for e in range(episodes):
 
         score += sum(reward)
     score_history.append(score)
-    avg_score = np.mean(score_history[-100:])
+    avg_score = np.mean(score_history[-10:])
     if not evaluate:
         if avg_score > best_score:
             maddpg_agents.save_checkpoint()
@@ -81,7 +81,7 @@ for e in range(episodes):
     
     if e % 1 == 0:
         env.render(e, save_dir_render,"trajectory")
-        mean_bit_rate = np.mean(env.bit_rate_each_ep[-3600:])
+        mean_bit_rate = np.mean(env.bit_rate_each_ep[-500:])
         logger.record(
             episode=e,
             epsilon=maddpg_agents.agents[0].noise.sigma,

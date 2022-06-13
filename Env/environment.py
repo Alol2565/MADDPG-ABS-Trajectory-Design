@@ -122,7 +122,7 @@ class Environment:
         UAVs definition
         """
         self.uav_obs_range = 10000
-        self.max_user_uav = 5
+        self.max_user_uav = 0
         self.num_uavs = n_uavs
         self.uavs:List[UAV] = self.num_uavs * [None]
         uavs_id = ['uav_' + str(i) for i in range(self.num_uavs)]
@@ -273,7 +273,7 @@ class Environment:
             reward_bit_rate = 0
         
         if(self.uavs[agent_idx].collision):
-            collision_reward = -100
+            collision_reward = -10
         
         for user in self.uavs[agent_idx].users:
             uav_total_bit_rate += user.bit_rate
