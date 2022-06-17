@@ -15,10 +15,10 @@ import concurrent.futures
 from collections import deque
 
 class Environment:
-    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, flight_time=3600,obs_type='2D'):
+    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, flight_time=3600, max_user_in_obs=5):
         self.id = id
         self.time_res = 1
-        self.obs_type = obs_type
+        self.max_user_uav = max_user_in_obs
         self.multi_agent = n_BSs > 1
         self.flight_time = flight_time
         """
@@ -122,7 +122,7 @@ class Environment:
         UAVs definition
         """
         self.uav_obs_range = 10000
-        self.max_user_uav = 0
+
         self.num_uavs = n_uavs
         self.uavs:List[UAV] = self.num_uavs * [None]
         uavs_id = ['uav_' + str(i) for i in range(self.num_uavs)]
@@ -149,21 +149,6 @@ class Environment:
         self.total_bit_rate = 0
         self.bit_rate_each_ep = []
 
-        # self.frames = []
-        # self.observation_space = []
-        # for i in range(self.num_uavs):
-        #     self.frames.append(deque(maxlen=int(6)))
-        #     for _ in range(1):
-        #         close_users_x = np.array(self.max_user_uav * [0])
-        #         close_users_y = np.array(self.max_user_uav * [0])
-        #         close_users_z = np.array(self.max_user_uav * [0])
-        #         close_users_p = np.array(self.max_user_uav * [0])
-        #     self.frames[i].append([close_users_x, close_users_y, close_users_z, close_users_p])
-        #     self.frames[i].append([self.uavs[i].location[0], self.uavs[i].location[1], self.uavs[i].location[2], 0])
-        #     self.frames[i].append([self.uavs[i].velocity[0], self.uavs[i].velocity[1], self.uavs[i].velocity[2], 0])
-
-        # self.frames = []
-        # self.observation_space = []
         self.frames = np.ndarray(shape=(self.num_uavs, self.max_user_uav + 2, 3), dtype=np.float64)
         self.observation_space = np.array(self.frames[0,:]).flatten()
 
@@ -181,45 +166,7 @@ class Environment:
     def create_uav(self, uav_id, location):
         return UAV(id=uav_id, power=1e-2, initial_location=location, env_borders=self.borders, buildings=self.buildings)
 
-    # def observe(self, agent_idx, obs_range, obs_type='2D'):
-    #     """
-    #     Observation of an uav is not just about its location. It can access to nearby users' signals.
-    #     As a result, it can obtain some information about users' location, some property of users and so on.
-    #     I'm wondering that these ignored information can be in the help of training. I mean it can increase our rate of 
-    #     convergence or imporve our convergence overall. 
-    #     """
-    #     close_users_x = np.array(self.max_user_uav * [0])
-    #     close_users_y = np.array(self.max_user_uav * [0])
-    #     close_users_z = np.array(self.max_user_uav * [0])
-    #     close_users_p = np.array(self.max_user_uav * [0])
-    #     idx = 0
-    #     for user in self.users:
-    #         if(np.linalg.norm(user.location - self.uavs[agent_idx].location) < obs_range and idx < self.max_user_uav):
-    #             close_users_x[idx] = user.location[0]
-    #             close_users_y[idx] = user.location[1]
-    #             close_users_z[idx] = user.location[2]
-    #             close_users_p[idx] = user.bit_rate
-    #             idx += 1
-    #     self.frames[agent_idx].append([close_users_x, close_users_y, close_users_z, close_users_p])
-    #     self.frames[agent_idx].append([self.uavs[agent_idx].location[0], self.uavs[agent_idx].location[1], self.uavs[agent_idx].location[2], 0])
-    #     self.frames[agent_idx].append([self.uavs[agent_idx].velocity[0], self.uavs[agent_idx].velocity[1], self.uavs[agent_idx].velocity[2], 0])
-    #     self.frames_ = np.array(self.frames[agent_idx])
-    #     if obs_type == '1D':
-    #         self.frames_ = self.frames_.flatten()
-    #     return self.frames_
-
-    # def observe(self, agent_idx, obs_range, obs_type='2D'):
-    #     idx = 0 
-    #     for user in self.users:
-    #         if(np.linalg.norm(user.location - self.uavs[agent_idx].location) < obs_range and idx < self.max_user_uav):
-    #             self.frames[agent_idx][idx] = user.location
-    #             idx += 1
-    #     self.frames[agent_idx][self.max_user_uav] = self.uavs[agent_idx].location
-    #     self.frames[agent_idx][self.max_user_uav + 1] = self.uavs[agent_idx].velocity
-        
-    #     return self.frames[agent_idx].flatten()
-
-    def observe(self, agent_idx, obs_range, obs_type='2D'):
+    def observe(self, agent_idx):
         distances = []
         for user in self.users:
             distances.append(np.linalg.norm(user.location - self.uavs[agent_idx].location))
@@ -230,8 +177,6 @@ class Environment:
         self.frames[agent_idx][self.max_user_uav] = self.uavs[agent_idx].location
         self.frames[agent_idx][self.max_user_uav + 1] = self.uavs[agent_idx].velocity
         return self.frames[agent_idx].flatten()
-
-       
         
     def in_no_fly_zone(self, agent_location):
         """
@@ -278,7 +223,7 @@ class Environment:
         for user in self.uavs[agent_idx].users:
             uav_total_bit_rate += user.bit_rate
         step_reward = 0.0
-        return collision_reward + (connected_users + len(self.uavs[agent_idx].users)) / self.num_users
+        return (collision_reward + (connected_users + len(self.uavs[agent_idx].users)) / self.num_users) / self.flight_time
 
     def move_user(self, user, delta_time):
         return user.move(delta_time)
@@ -319,7 +264,7 @@ class Environment:
         obs = np.ndarray(shape=(self.num_uavs, len(self.observation_space)))
         rewards = []
         for uav_idx in range(self.num_uavs):
-            obs[uav_idx, :] = self.observe(uav_idx, self.uav_obs_range, self.obs_type)
+            obs[uav_idx, :] = self.observe(uav_idx)
             rewards.append(self.reward_function(uav_idx))
         obs = np.array(obs, dtype=np.float32)
         rewards = np.array(rewards, dtype=np.float32)
@@ -361,7 +306,7 @@ class Environment:
 
         obs = []
         for uav_idx in range(self.num_uavs):
-            obs.append(self.observe(uav_idx, self.uav_obs_range, self.obs_type))
+            obs.append(self.observe(uav_idx))
         obs = np.array(obs, dtype=np.float32)
         return obs
 

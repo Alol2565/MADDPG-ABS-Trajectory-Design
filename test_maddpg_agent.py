@@ -14,7 +14,7 @@ def obs_list_to_state_vector(observation):
         state = np.concatenate([state, obs])
     return state
 
-env = Environment('Env-1', n_users=40, n_uavs=2, n_BSs=2, flight_time=500,obs_type='1D')
+env = Environment('Env-1', n_users=30, n_uavs=2, n_BSs=0, flight_time=200, max_user_in_obs=0)
 
 n_agents = env.num_uavs
 actor_dims = []
@@ -32,7 +32,7 @@ save_dir_render = save_dir / 'render_trajectory'
 save_dir_render.mkdir(parents=True)
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
-                           fc1=256, fc2=512,  
+                           fc1=256, fc2=512, fc3=1024, fc4=2048, fc5=4096,
                            alpha=0.01, beta=0.01, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
@@ -52,7 +52,8 @@ best_score = 0
 for e in range(episodes):
     obs = env.reset()
     for agent in maddpg_agents.agents:
-        agent.noise.sigma *= 0.999
+        # agent.noise.sigma *= 1.0 / (1.0 + e / 100.0)
+        agent.noise.sigma = 1.0
     done = [False] * n_agents
     score = 0
     while not any(done):
@@ -88,5 +89,3 @@ for e in range(episodes):
             step=maddpg_agents.curr_step,
             mean_bit_rate=mean_bit_rate
         )
-
-

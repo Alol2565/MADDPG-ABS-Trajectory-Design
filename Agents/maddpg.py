@@ -7,7 +7,7 @@ from pathlib import Path
 class MADDPG:
     def __init__(self, actor_dims, critic_dims, n_agents, n_actions, 
                  scenario='simple',  alpha=0.01, beta=0.01, fc1=64, 
-                 fc2=64, gamma=0.99, tau=0.01, chkpt_dir='tmp/maddpg/'):
+                 fc2=64, fc3=128, fc4=256, fc5=512,gamma=0.99, tau=0.01, chkpt_dir='tmp/maddpg/'):
         self.agents = []
         self.n_agents = n_agents
         self.n_actions = n_actions
@@ -16,7 +16,7 @@ class MADDPG:
         mk_chkpt_dir.mkdir(parents=True)
         for agent_idx in range(self.n_agents):
             self.agents.append(Agent(actor_dims[agent_idx], critic_dims,  
-                            n_actions, n_agents, agent_idx, alpha=alpha, beta=beta,
+                            n_actions, n_agents, agent_idx, alpha=alpha, beta=beta, fc1=fc1, fc2=fc2, fc3=fc3, fc4=fc4, fc5=fc5,
                             chkpt_dir=chkpt_dir))
         self.curr_step = 0
                             
