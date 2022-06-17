@@ -32,7 +32,7 @@ save_dir_render = save_dir / 'render_trajectory'
 save_dir_render.mkdir(parents=True)
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
-                           fc1=256, fc2=512, fc3=1024, fc4=2048, fc5=4096,
+                           fc1=128, fc2=256, fc3=512, fc4=1024, fc5=1024,
                            alpha=0.01, beta=0.01, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
@@ -40,7 +40,7 @@ memory = MultiAgentReplayBuffer(100000, critic_dims, actor_dims,
                         n_actions, n_agents, batch_size=1024)
 
 logger = MetricLogger(save_dir)
-episodes = int(1e2)
+episodes = int(1e3)
 # logger.record_initials(len(agent.memory), agent.batch_size, agent.exploration_rate_decay, agent.burnin, agent.learn_every, agent.sync_every)
 evaluate = False
 

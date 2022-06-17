@@ -152,12 +152,25 @@ class Environment:
         self.frames = np.ndarray(shape=(self.num_uavs, self.max_user_uav + 2, 3), dtype=np.float64)
         self.observation_space = np.array(self.frames[0,:]).flatten()
 
+    # def create_user(self, user_id):
+    #     user_location = np.array([
+    #     np.random.uniform(self.borders[0][0], self.borders[1][0]),
+    #     np.random.uniform(self.borders[0][1], self.borders[1][1]),
+    #     1
+    #     ])
+    #     return User(id=user_id, power=1, initial_location=user_location, env_borders=self.borders)
+
     def create_user(self, user_id):
         user_location = np.array([
-        np.random.uniform(self.borders[0][0], self.borders[1][0]),
-        np.random.uniform(self.borders[0][1], self.borders[1][1]),
+        np.random.normal((self.borders[1][0] - self.borders[0][0]) * 3 / 4, 50),
+        np.random.normal((self.borders[0][1] - self.borders[1][1]) * 3 / 4, 50),
         1
         ])
+        for i in range(3):
+            if user_location[i] < self.borders[0][i]:
+                user_location[i] = self.borders[0][i] / 2
+            elif user_location[i] > self.borders[1][i]:
+                user_location[i] = self.borders[1][i] / 2
         return User(id=user_id, power=1, initial_location=user_location, env_borders=self.borders)
 
     def create_base_station(self, BS_id, location):
@@ -218,7 +231,7 @@ class Environment:
             reward_bit_rate = 0
         
         if(self.uavs[agent_idx].collision):
-            collision_reward = -10
+            collision_reward = -1
         
         for user in self.uavs[agent_idx].users:
             uav_total_bit_rate += user.bit_rate
