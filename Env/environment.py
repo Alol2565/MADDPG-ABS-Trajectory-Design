@@ -161,11 +161,20 @@ class Environment:
     #     return User(id=user_id, power=1, initial_location=user_location, env_borders=self.borders)
 
     def create_user(self, user_id):
-        user_location = np.array([
-        np.random.normal((self.borders[1][0] - self.borders[0][0]) * 2 / 4, 50),
-        np.random.normal((self.borders[0][1] - self.borders[1][1]) * 3 / 4, 50),
-        1
-        ])
+        # zone = np.random.randint(0, 2)
+        zone = 0
+        if(zone == 0):
+            user_location = np.array([
+            np.random.normal((self.borders[1][0] - self.borders[0][0]) * 3 / 4, 50),
+            np.random.normal((self.borders[0][1] - self.borders[1][1]) * 3 / 4, 50),
+            1
+            ])
+        if(zone == 1):
+            user_location = np.array([
+            np.random.normal((self.borders[1][0] - self.borders[0][0]) * 1 / 4, 50),
+            np.random.normal((self.borders[0][1] - self.borders[1][1]) * 3 / 4, 50),
+            1
+            ])
         for i in range(3):
             if user_location[i] < self.borders[0][i]:
                 user_location[i] = self.borders[0][i] / 2

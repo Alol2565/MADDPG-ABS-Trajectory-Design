@@ -53,7 +53,9 @@ for e in range(episodes):
     obs = env.reset()
     for agent in maddpg_agents.agents:
         # agent.noise.sigma *= 1.0 / (1.0 + e / 100.0)
-        agent.noise.sigma = 1.0
+        agent.noise.sigma = 0.5
+        agent.noise.theta = 0.5
+        agent.noise.dt = 1
     done = [False] * n_agents
     score = 0
     while not any(done):
@@ -73,7 +75,7 @@ for e in range(episodes):
 
         score += sum(reward)
     score_history.append(score)
-    avg_score = np.mean(score_history[-100:])
+    avg_score = np.mean(score_history[-10:])
     if not evaluate:
         if avg_score > best_score:
             maddpg_agents.save_checkpoint()
