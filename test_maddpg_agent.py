@@ -64,7 +64,7 @@ for e in range(episodes):
 
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
 
-        if maddpg_agents.curr_step % 32 == 0 and not evaluate:
+        if maddpg_agents.curr_step % 16 == 0 and  maddpg_agents.curr_step > 1024:
             maddpg_agents.learn(memory)
 
         logger.log_step(sum(reward), 0, 0)
@@ -73,7 +73,7 @@ for e in range(episodes):
 
         score += sum(reward)
     score_history.append(score)
-    avg_score = np.mean(score_history[-10:])
+    avg_score = np.mean(score_history[-100:])
     if not evaluate:
         if avg_score > best_score:
             maddpg_agents.save_checkpoint()
@@ -82,7 +82,7 @@ for e in range(episodes):
     
     if e % 1 == 0:
         env.render(e, save_dir_render,"trajectory")
-        mean_bit_rate = np.mean(env.bit_rate_each_ep[-500:])
+        mean_bit_rate = np.mean(env.bit_rate_each_ep[-200:])
         logger.record(
             episode=e,
             epsilon=maddpg_agents.agents[0].noise.sigma,

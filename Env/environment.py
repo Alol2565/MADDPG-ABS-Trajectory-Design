@@ -162,7 +162,7 @@ class Environment:
 
     def create_user(self, user_id):
         user_location = np.array([
-        np.random.normal((self.borders[1][0] - self.borders[0][0]) * 3 / 4, 50),
+        np.random.normal((self.borders[1][0] - self.borders[0][0]) * 2 / 4, 50),
         np.random.normal((self.borders[0][1] - self.borders[1][1]) * 3 / 4, 50),
         1
         ])
