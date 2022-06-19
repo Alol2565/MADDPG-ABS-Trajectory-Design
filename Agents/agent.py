@@ -37,12 +37,6 @@ class Agent:
         action = actions + T.tensor(self.noise(), dtype=T.float).to(self.actor.device)
         return action.detach().cpu().numpy()
     
-    # def choose_action(self, observation, epsilon):
-    #     state = T.tensor(observation, dtype=T.float).to(self.actor.device)
-    #     actions = self.actor.forward(state)
-    #     action = actions + T.tensor(np.random.normal(0, epsilon), dtype=T.float).to(self.actor.device)
-    #     return action.detach().cpu().numpy()
-
     def update_network_parameters(self, tau=None):
         if tau is None:
             tau = self.tau

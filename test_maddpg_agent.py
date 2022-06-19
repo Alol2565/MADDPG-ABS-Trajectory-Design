@@ -53,9 +53,9 @@ for e in range(episodes):
     obs = env.reset()
     for agent in maddpg_agents.agents:
         # agent.noise.sigma *= 1.0 / (1.0 + e / 100.0)
-        agent.noise.sigma = 0.5
+        agent.noise.sigma = 1
         agent.noise.theta = 0.5
-        agent.noise.dt = 1
+        agent.noise.dt = 1e-1
     done = [False] * n_agents
     score = 0
     while not any(done):
@@ -66,7 +66,7 @@ for e in range(episodes):
 
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
 
-        if maddpg_agents.curr_step % 16 == 0 and  maddpg_agents.curr_step > 1024:
+        if maddpg_agents.curr_step % 16 == 0:
             maddpg_agents.learn(memory)
 
         logger.log_step(sum(reward), 0, 0)
