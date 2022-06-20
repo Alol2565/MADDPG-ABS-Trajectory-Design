@@ -12,8 +12,8 @@ class MetricLogger():
                 f"{'TimeDelta':>15}{'Time':>20}\n"
             )
         self.ep_rewards_plot = save_dir / "reward_plot.jpg"
-        self.ep_lengths_plot = save_dir / "length_plot.jpg"
-        self.ep_avg_losses_plot = save_dir / "loss_plot.jpg"
+        self.ep_connected_users_plot = save_dir / "connected_users_plot.jpg"
+        self.ep_bit_rate_plot = save_dir / "avg_bit_rate_plot.jpg"
         # History metrics
         self.ep_rewards = []
         self.ep_lengths = []
@@ -29,32 +29,30 @@ class MetricLogger():
 
         # Timing
         self.record_time = time.time()
+        self.curr_connected_users = []
+        self.curr_total_bit_rate = []
+        self.ep_connected_users = []
+        self.ep_total_bit_rate = []
+        self.moving_avg_ep_connected_users = []
+        self.moving_avg_ep_bit_rate = []
 
 
-    def log_step(self, reward, loss, q):
+    def log_step(self, reward, connected_users, total_bit_rate):
         self.curr_ep_reward += reward
-        self.curr_ep_length += 1
-        if loss:
-            self.curr_ep_loss += loss
-            self.curr_ep_loss_length += 1
+        self.curr_connected_users.append(connected_users)
+        self.curr_total_bit_rate.append(total_bit_rate)
 
     def log_episode(self):
         "Mark end of episode"
         self.ep_rewards.append(self.curr_ep_reward)
-        self.ep_lengths.append(self.curr_ep_length)
-        if self.curr_ep_loss_length == 0:
-            ep_avg_loss = 0
-        else:
-            ep_avg_loss = np.round(self.curr_ep_loss / self.curr_ep_loss_length, 5)
-        self.ep_avg_losses.append(ep_avg_loss)
-
+        self.ep_connected_users.append(np.mean(self.curr_connected_users))
+        self.ep_total_bit_rate.append(np.mean(self.curr_total_bit_rate))
         self.init_episode()
 
     def init_episode(self):
         self.curr_ep_reward = 0.0
-        self.curr_ep_length = 0
-        self.curr_ep_loss = 0.0
-        self.curr_ep_loss_length = 0
+        self.curr_connected_users = []
+        self.curr_total_bit_rate = []
 
     # def record_nn(self, nn):
     #     with open(str(self.save_log) + str("_nn_specs"), "a") as f:
@@ -69,13 +67,13 @@ class MetricLogger():
                 f"\nsync every: {sync_every:15.3f}\n"
             )
 
-    def record(self, episode, epsilon, step, mean_bit_rate):
+    def record(self, episode, epsilon, step):
         mean_ep_reward = np.round(np.mean(self.ep_rewards[-10:]), 3)
-        mean_ep_length = np.round(np.mean(self.ep_lengths[-10:]), 3)
-        mean_ep_loss = np.round(np.mean(self.ep_avg_losses[-10:]), 3)
+        mean_ep_connected_users = np.round(np.mean(self.ep_connected_users[-10:]), 3)
+        mean_ep_total_bit_rate = np.round(np.mean(self.ep_total_bit_rate[-10:]), 3)
         self.moving_avg_ep_rewards.append(mean_ep_reward)
-        self.moving_avg_ep_lengths.append(mean_ep_length)
-        self.moving_avg_ep_avg_losses.append(mean_ep_loss)
+        self.moving_avg_ep_connected_users.append(mean_ep_connected_users)
+        self.moving_avg_ep_bit_rate.append(mean_ep_total_bit_rate)
         self.record_time = time.time()
 
         print(
@@ -83,20 +81,19 @@ class MetricLogger():
             f"Step {step} - "
             f"Epsilon {epsilon} - "
             f"Mean Reward {mean_ep_reward} - "
-            f"Mean Length {mean_ep_length} - "
-            f"Mean Loss {mean_ep_loss} - "
-            f"Mean Bit Rate {mean_bit_rate:5.4f} - "
+            f"Mean Connected Users {mean_ep_connected_users} - "
+            f"Mean Bit Rate {mean_ep_total_bit_rate} - "
             f"Time {datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')}"
         )
 
         with open(self.save_log, "a") as f:
             f.write(
                 f"{episode:8d}{step:8d}{epsilon:10.3f}"
-                f"{mean_ep_reward:15.3f}{mean_ep_length:15.3f}{mean_ep_loss:15.3f}"
+                f"{mean_ep_reward:15.3f}{mean_ep_connected_users:15.3f}{mean_ep_total_bit_rate:15.3f}"
                 f"{datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'):>20}\n"
             )
 
-        for metric in ["ep_rewards", "ep_lengths", "ep_avg_losses"]:
+        for metric in ["ep_rewards", "ep_connected_users", "ep_bit_rate"]:
             plt.plot(getattr(self, f"moving_avg_{metric}"))
             plt.grid()
             plt.title(metric)

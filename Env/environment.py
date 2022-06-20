@@ -108,6 +108,7 @@ class Environment:
         Users definition
         """
         self.num_users = n_users
+        self.connected_users = 0
         self.users:List[User] = self.num_users * [None]
         users_id = ['user_' + str(i) for i in range(self.num_users)]
         """
@@ -221,12 +222,12 @@ class Environment:
         self.total_bit_rate = 0
         collision_reward = 0
         uav_total_bit_rate = 0
-        connected_users = 0
+        self.connected_users = 0
 
         for user in self.users:
             self.total_bit_rate += user.bit_rate
             if user.bit_rate > 0:
-                connected_users += 1
+                self.connected_users += 1
 
         self.total_bit_rate = self.total_bit_rate / self.num_users
 
@@ -245,7 +246,7 @@ class Environment:
         for user in self.uavs[agent_idx].users:
             uav_total_bit_rate += user.bit_rate
         step_reward = 0.0
-        return ((self.total_bit_rate + connected_users + len(self.uavs[agent_idx].users)) / self.num_users)
+        return ((10 * self.total_bit_rate + self.connected_users + len(self.uavs[agent_idx].users)) / self.num_users)
 
     def move_user(self, user, delta_time):
         return user.move(delta_time)
@@ -290,7 +291,7 @@ class Environment:
             rewards.append(self.reward_function(uav_idx))
         obs = np.array(obs, dtype=np.float32)
         rewards = np.array(rewards, dtype=np.float32)
-        info = {}
+        info = {'total bit rate': self.total_bit_rate, 'num connected users': self.connected_users}
         # log_ml.info('Time: %.2f |  reward: %.2f  |  observation: %s  |  action: %s  |  done: %s' %(self.time, reward, obs, action, done))
         self.bit_rate_each_ep.append(self.total_bit_rate)
         return [obs, rewards, done, info]

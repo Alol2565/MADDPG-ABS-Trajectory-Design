@@ -66,10 +66,10 @@ for e in range(episodes):
 
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
 
-        if maddpg_agents.curr_step % 16 == 0:
+        if maddpg_agents.curr_step % 8 == 0:
             maddpg_agents.learn(memory)
 
-        logger.log_step(sum(reward), 0, 0)
+        logger.log_step(sum(reward), info['num connected users'], info['total bit rate'])
 
         obs = obs_
 
@@ -88,6 +88,5 @@ for e in range(episodes):
         logger.record(
             episode=e,
             epsilon=maddpg_agents.agents[0].noise.sigma,
-            step=maddpg_agents.curr_step,
-            mean_bit_rate=mean_bit_rate
+            step=maddpg_agents.curr_step
         )
