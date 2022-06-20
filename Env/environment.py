@@ -1,9 +1,6 @@
 from traceback import print_tb
 from typing import List
 import matplotlib.pyplot as plt
-from pyparsing import originalTextFor
-from traitlets import observe
-# from logger import log, log_ml
 from Env.network import Network
 from Env.BaseStations.base_station import Base_Station
 from Env.Users.user import User
@@ -12,7 +9,6 @@ from Env.BaseStations.uav import UAV
 import datetime
 import numpy as np
 import concurrent.futures
-from collections import deque
 
 class Environment:
     def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, flight_time=3600, max_user_in_obs=5):
