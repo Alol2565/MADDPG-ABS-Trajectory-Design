@@ -55,7 +55,7 @@ for e in range(episodes):
         # agent.noise.sigma *= 1.0 / (1.0 + e / 100.0)
         agent.noise.sigma = 1
         agent.noise.theta = 0.5
-        agent.noise.dt = 1e-1
+        agent.noise.dt = 1
     done = [False] * n_agents
     score = 0
     while not any(done):
