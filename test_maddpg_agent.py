@@ -19,11 +19,8 @@ actor_dims = []
 for i in range(n_agents):
     actor_dims.append(env.observation_space.shape[0])
 critic_dims = sum(actor_dims)
-# action space is a list of arrays, assume each agent has same action space
 n_actions = 2
 scenario = 'simple'
-
-
 save_dir = Path('results') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
 save_dir_render = save_dir / 'render_trajectory'
