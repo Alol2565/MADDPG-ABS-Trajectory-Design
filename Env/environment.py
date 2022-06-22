@@ -158,8 +158,8 @@ class Environment:
     #     return User(id=user_id, power=1, initial_location=user_location, env_borders=self.borders)
 
     def create_user(self, user_id):
-        # zone = np.random.randint(0, 2)
-        zone = 0
+        zone = np.random.randint(0, 2)
+        # zone = 0
         if(zone == 0):
             user_location = np.array([
             np.random.normal((self.borders[1][0] - self.borders[0][0]) * 3 / 4, 50),
@@ -242,7 +242,7 @@ class Environment:
         for user in self.uavs[agent_idx].users:
             uav_total_bit_rate += user.bit_rate
         step_reward = 0.0
-        return ((10 * self.total_bit_rate + self.connected_users + len(self.uavs[agent_idx].users)) / self.num_users)
+        return ((20 * self.total_bit_rate + 1 * self.connected_users + 0 * len(self.uavs[agent_idx].users)) / self.num_users) + 0 * collision_reward
 
     def move_user(self, user, delta_time):
         return user.move(delta_time)

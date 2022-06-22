@@ -14,7 +14,7 @@ def obs_list_to_state_vector(observation):
         state = np.concatenate([state, obs])
     return state
 
-env = Environment('Env-1', n_users=30, n_uavs=2, n_BSs=0, flight_time=200, max_user_in_obs=0)
+env = Environment('Env-1', n_users=50, n_uavs=2, n_BSs=2, flight_time=200, max_user_in_obs=0)
 
 n_agents = env.num_uavs
 actor_dims = []
@@ -32,7 +32,7 @@ save_dir_render = save_dir / 'render_trajectory'
 save_dir_render.mkdir(parents=True)
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
-                           fc1=128, fc2=256, fc3=512, fc4=1024, fc5=1024,
+                           fc1=64, fc2=128, fc3=256, fc4=512, fc5=512,
                            alpha=0.01, beta=0.01, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
@@ -52,7 +52,6 @@ best_score = 0
 for e in range(episodes):
     obs = env.reset()
     for agent in maddpg_agents.agents:
-        # agent.noise.sigma *= 1.0 / (1.0 + e / 100.0)
         agent.noise.sigma = 1
         agent.noise.theta = 0.5
         agent.noise.dt = 1
@@ -63,16 +62,11 @@ for e in range(episodes):
         obs_, reward, done, info = env.step(actions)
         state = obs_list_to_state_vector(obs)
         state_ = obs_list_to_state_vector(obs_)
-
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
-
         if maddpg_agents.curr_step % 8 == 0:
             maddpg_agents.learn(memory)
-
         logger.log_step(sum(reward), info['num connected users'], info['total bit rate'])
-
         obs = obs_
-
         score += sum(reward)
     score_history.append(score)
     avg_score = np.mean(score_history[-10:])
