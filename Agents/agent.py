@@ -1,4 +1,3 @@
-from traceback import print_tb
 import torch as T
 from Agents.networks import ActorNetwork, CriticNetwork
 import numpy as np

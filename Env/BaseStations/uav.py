@@ -1,6 +1,4 @@
 import string
-
-from matplotlib.pyplot import step
 from Env.nodes import SP_Node
 import numpy as np
 from copy import deepcopy

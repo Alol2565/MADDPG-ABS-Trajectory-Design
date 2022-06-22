@@ -1,5 +1,3 @@
-from cmath import sin
-from platform import node
 import numpy as np
 import scipy.constants
 from Env.BaseStations.base_station import Base_Station

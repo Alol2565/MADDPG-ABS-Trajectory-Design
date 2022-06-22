@@ -4,7 +4,6 @@ from pathlib import Path
 from sympy import false
 from metrics import MetricLogger
 from Env.environment import Environment
-import torch
 from Agents.maddpg import MADDPG
 from Agents.buffer import MultiAgentReplayBuffer
 

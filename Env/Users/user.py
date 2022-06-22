@@ -1,10 +1,7 @@
-import random
 import string
-# from typing_extensions import Self
 import numpy as np
 from Env.nodes import SP_Node, User_Node
 from copy import deepcopy
-# from logger import log
 
 class User(User_Node):
     def __init__(self, id: string, power: float, initial_location, env_borders):

@@ -1,4 +1,3 @@
-from traceback import print_tb
 from typing import List
 import matplotlib.pyplot as plt
 from Env.network import Network
