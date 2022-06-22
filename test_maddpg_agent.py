@@ -1,7 +1,6 @@
 import numpy as np
 import datetime
 from pathlib import Path
-from sympy import false
 from metrics import MetricLogger
 from Env.environment import Environment
 from Agents.maddpg import MADDPG
