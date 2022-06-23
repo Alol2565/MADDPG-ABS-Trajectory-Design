@@ -241,7 +241,7 @@ class Environment:
         for user in self.uavs[agent_idx].users:
             uav_total_bit_rate += user.bit_rate
         step_reward = 0.0
-        return ((20 * (self.total_bit_rate + uav_total_bit_rate)  + 1 * self.connected_users + 0 * len(self.uavs[agent_idx].users)) / self.num_users) + 0 * collision_reward
+        return ((20 * (self.total_bit_rate + uav_total_bit_rate)  + 1 * self.connected_users + 1 * len(self.uavs[agent_idx].users)) / self.num_users) + 0 * collision_reward
 
     def move_user(self, user, delta_time):
         return user.move(delta_time)
