@@ -10,12 +10,13 @@ import numpy as np
 import concurrent.futures
 
 class Environment:
-    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, flight_time=3600, max_user_in_obs=5):
+    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, flight_time=3600, max_user_in_obs=5, reward_weights=np.array([1, 1, 1, 1, 1])):
         self.id = id
         self.time_res = 1
         self.max_user_uav = max_user_in_obs
         self.multi_agent = n_BSs > 1
         self.flight_time = flight_time
+        self.reward_weights = reward_weights
         """
         Space Borders
         """
@@ -227,13 +228,13 @@ class Environment:
         self.total_bit_rate = self.total_bit_rate / self.num_users
 
         if(self.in_no_fly_zone(self.uavs[agent_idx].location)):
-            reward_area = 0
+            reward_area = -1
 
         if(self.lost_connectivity(self.uavs[agent_idx].location)):
-            reward_connectivity = 0
+            reward_connectivity = -1
 
         if(self.total_bit_rate < 0.01 * len(self.users)):
-            reward_bit_rate = 0
+            reward_bit_rate = -1
         
         if(self.uavs[agent_idx].collision):
             collision_reward = -1
@@ -241,7 +242,8 @@ class Environment:
         for user in self.uavs[agent_idx].users:
             uav_total_bit_rate += user.bit_rate
         step_reward = 0.0
-        return ((20 * (self.total_bit_rate + uav_total_bit_rate)  + 1 * self.connected_users + 1 * len(self.uavs[agent_idx].users)) / self.num_users) + 0 * collision_reward
+        reward = [self.total_bit_rate, uav_total_bit_rate, self.connected_users, len(self.uavs[agent_idx].users), collision_reward, step_reward]
+        return np.matmul(self.reward_weights, reward)
 
     def move_user(self, user, delta_time):
         return user.move(delta_time)

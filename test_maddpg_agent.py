@@ -12,13 +12,20 @@ def obs_list_to_state_vector(observation):
         state = np.concatenate([state, obs])
     return state
 
-env = Environment('Env-1', n_users=50, n_uavs=2, n_BSs=2, flight_time=200, max_user_in_obs=0)
+# reward = [self.total_bit_rate, uav_total_bit_rate, self.connected_users, len(self.uavs[agent_idx].users), collision_reward, step_reward]
+num_users = 50
+num_BSs = 2
+num_uavs = 2
+reward_weights = np.array([20, 20, 1, 1, 0, 0]) / num_users
+env = Environment('Env-1', n_users=num_users, n_uavs=num_uavs, n_BSs=num_BSs, flight_time=200, max_user_in_obs=0, reward_weights=reward_weights)
 
 n_agents = env.num_uavs
 actor_dims = []
 for i in range(n_agents):
     actor_dims.append(env.observation_space.shape[0])
 critic_dims = sum(actor_dims)
+print('Actor input dims: ', actor_dims, 'Critic input dims: ', critic_dims)
+
 n_actions = 2
 scenario = 'simple'
 save_dir = Path('results') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
@@ -27,7 +34,7 @@ save_dir_render = save_dir / 'render_trajectory'
 save_dir_render.mkdir(parents=True)
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
-                           fc1=32, fc2=64, fc3=128, fc4=256, fc5=256,
+                           fc1=16, fc2=32, fc3=64, fc4=128, fc5=256,
                            alpha=0.01, beta=0.01, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
@@ -63,7 +70,7 @@ for e in range(episodes):
         obs = obs_
         score += sum(reward)
     score_history.append(score)
-    avg_score = np.mean(score_history[-10:])
+    avg_score = np.mean(score_history[-5:])
     if not evaluate:
         if avg_score > best_score:
             maddpg_agents.save_checkpoint()
