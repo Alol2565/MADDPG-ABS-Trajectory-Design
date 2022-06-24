@@ -288,7 +288,7 @@ class Environment:
             rewards.append(self.reward_function(uav_idx))
         obs = np.array(obs, dtype=np.float32)
         rewards = np.array(rewards, dtype=np.float32)
-        info = {'Avg bit rate': self.avg_bit_rate, 'num connected users': self.connected_users}
+        info = {'avg bit rate': self.avg_bit_rate, 'num connected users': self.connected_users}
         # log_ml.info('Time: %.2f |  reward: %.2f  |  observation: %s  |  action: %s  |  done: %s' %(self.time, reward, obs, action, done))
         self.bit_rate_each_ep.append(self.total_bit_rate)
         return [obs, rewards, done, info]
