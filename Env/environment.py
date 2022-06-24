@@ -14,7 +14,7 @@ class Environment:
         self.id = id
         self.time_res = 1
         self.max_user_uav = max_user_in_obs
-        self.multi_agent = n_BSs > 1
+        self.multi_agent = n_uavs > 1
         self.flight_time = flight_time
         self.reward_weights = reward_weights
         """
@@ -183,7 +183,7 @@ class Environment:
         return Base_Station(id=BS_id, power=1, initial_location=location)
 
     def create_uav(self, uav_id, location):
-        return UAV(id=uav_id, power=1e-2, initial_location=location, env_borders=self.borders, buildings=self.buildings)
+        return UAV(id=uav_id, power=1, initial_location=location, env_borders=self.borders, buildings=self.buildings)
 
     def observe(self, agent_idx):
         distances = []
