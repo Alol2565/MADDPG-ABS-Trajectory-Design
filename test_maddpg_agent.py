@@ -67,7 +67,7 @@ for e in range(episodes):
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
         if maddpg_agents.curr_step % 16 == 0:
             maddpg_agents.learn(memory)
-        logger.log_step(sum(reward), info['num connected users'], info['total bit rate'])
+        logger.log_step(sum(reward), info['num connected users'], info['avg bit rate'])
         obs = obs_
         score += sum(reward)
     score_history.append(score)

@@ -225,8 +225,8 @@ class Environment:
             if user.bit_rate > 0:
                 self.connected_users += 1
 
-        self.total_bit_rate = self.total_bit_rate
-
+        self.avg_bit_rate = self.total_bit_rate / self.num_users
+        
         if(self.in_no_fly_zone(self.uavs[agent_idx].location)):
             reward_area = -1
 
@@ -288,7 +288,7 @@ class Environment:
             rewards.append(self.reward_function(uav_idx))
         obs = np.array(obs, dtype=np.float32)
         rewards = np.array(rewards, dtype=np.float32)
-        info = {'total bit rate': self.total_bit_rate, 'num connected users': self.connected_users}
+        info = {'Avg bit rate': self.avg_bit_rate, 'num connected users': self.connected_users}
         # log_ml.info('Time: %.2f |  reward: %.2f  |  observation: %s  |  action: %s  |  done: %s' %(self.time, reward, obs, action, done))
         self.bit_rate_each_ep.append(self.total_bit_rate)
         return [obs, rewards, done, info]
