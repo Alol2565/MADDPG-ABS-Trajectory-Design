@@ -225,7 +225,7 @@ class Environment:
             if user.bit_rate > 0:
                 self.connected_users += 1
 
-        self.total_bit_rate = self.total_bit_rate / self.num_users
+        self.total_bit_rate = self.total_bit_rate
 
         if(self.in_no_fly_zone(self.uavs[agent_idx].location)):
             reward_area = -1
