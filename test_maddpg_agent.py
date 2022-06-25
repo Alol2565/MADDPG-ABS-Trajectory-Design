@@ -16,7 +16,7 @@ def obs_list_to_state_vector(observation):
 num_users = 50
 num_BSs = 2
 num_uavs = 2
-reward_weights = np.array([40, 40, 1, 1, 0, 0]) / num_users
+reward_weights = np.array([1, 1, 1, 1, 0, 0]) / num_users
 print('reward weights: ', reward_weights)
 env = Environment('Env-1', n_users=num_users, n_uavs=num_uavs, n_BSs=num_BSs, flight_time=200, max_user_in_obs=0, reward_weights=reward_weights)
 
@@ -35,7 +35,7 @@ save_dir_render = save_dir / 'render_trajectory'
 save_dir_render.mkdir(parents=True)
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
-                           fc1=32, fc2=64, fc3=128, fc4=256, fc5=512,
+                           fc1=16, fc2=32, fc3=64, fc4=128, fc5=256,
                            alpha=0.01, beta=0.01, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
@@ -71,14 +71,14 @@ for e in range(episodes):
         obs = obs_
         score += sum(reward)
     score_history.append(score)
-    avg_score = np.mean(score_history[-5:])
+    avg_score = np.mean(score_history[-10:])
     if not evaluate:
         if avg_score > best_score:
             maddpg_agents.save_checkpoint()
             best_score = avg_score
     logger.log_episode()
     
-    if e % 5 == 0:
+    if e % 1 == 0:
         env.render(e, save_dir_render,"trajectory")
         logger.record(
             episode=e,

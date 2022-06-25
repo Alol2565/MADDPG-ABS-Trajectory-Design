@@ -68,9 +68,9 @@ class MetricLogger():
             )
 
     def record(self, episode, epsilon, step):
-        mean_ep_reward = np.round(np.mean(self.ep_rewards[-5:]), 3)
-        mean_ep_connected_users = np.round(np.mean(self.ep_connected_users[-5:]), 3)
-        mean_ep_total_bit_rate = np.round(np.mean(self.ep_total_bit_rate[-5:]), 3)
+        mean_ep_reward = np.round(np.mean(self.ep_rewards[-10:]), 3)
+        mean_ep_connected_users = np.round(np.mean(self.ep_connected_users[-10:]), 3)
+        mean_ep_total_bit_rate = np.round(np.mean(self.ep_total_bit_rate[-10:]), 3)
         self.moving_avg_ep_rewards.append(mean_ep_reward)
         self.moving_avg_ep_connected_users.append(mean_ep_connected_users)
         self.moving_avg_ep_bit_rate.append(mean_ep_total_bit_rate)

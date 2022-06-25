@@ -15,8 +15,8 @@ class CriticNetwork(nn.Module):
         self.fc2 = nn.Linear(fc1_dims, fc2_dims)
         self.fc3 = nn.Linear(fc2_dims, fc3_dims)
         self.fc4 = nn.Linear(fc3_dims, fc4_dims)
-        self.fc5 = nn.Linear(fc4_dims, fc5_dims)
-        self.q = nn.Linear(fc5_dims, 1)
+        # self.fc5 = nn.Linear(fc4_dims, fc5_dims)
+        self.q = nn.Linear(fc4_dims, 1)
 
         self.optimizer = optim.Adam(self.parameters(), lr=beta)
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
@@ -28,7 +28,7 @@ class CriticNetwork(nn.Module):
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         x = F.relu(self.fc4(x))
-        x = F.relu(self.fc5(x))
+        # x = F.relu(self.fc5(x))
         q = self.q(x)
 
         return q
@@ -51,8 +51,8 @@ class ActorNetwork(nn.Module):
         self.fc2 = nn.Linear(fc1_dims, fc2_dims)
         self.fc3 = nn.Linear(fc2_dims, fc3_dims)
         self.fc4 = nn.Linear(fc3_dims, fc4_dims)
-        self.fc5 = nn.Linear(fc4_dims, fc5_dims)
-        self.pi = nn.Linear(fc5_dims, n_actions)
+        # self.fc5 = nn.Linear(fc4_dims, fc5_dims)
+        self.pi = nn.Linear(fc4_dims, n_actions)
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
@@ -64,7 +64,7 @@ class ActorNetwork(nn.Module):
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         x = F.relu(self.fc4(x))
-        x = F.relu(self.fc5(x))
+        # x = F.relu(self.fc5(x))
         pi = T.tanh(self.pi(x))
         return pi
 
