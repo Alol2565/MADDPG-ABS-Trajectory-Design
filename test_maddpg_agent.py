@@ -54,9 +54,9 @@ best_score = 0
 
 for agent in maddpg_agents.agents:
     agent.noise_type = "param"
-    agent.desired_distance = 0.1
-    agent.scalar_decay = 0.9
-    agent.scalar = 1
+    agent.desired_distance = 0.01
+    agent.scalar_decay = 0.99
+    agent.scalar = 5
 
 for e in range(episodes):
     obs = env.reset()
@@ -87,6 +87,6 @@ for e in range(episodes):
         env.render(e, save_dir_render,"trajectory")
         logger.record(
             episode=e,
-            epsilon=1,
+            epsilon=maddpg_agents.agents[0].scalar,
             step=maddpg_agents.curr_step
         )
