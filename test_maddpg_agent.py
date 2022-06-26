@@ -56,7 +56,7 @@ for e in range(episodes):
     for agent in maddpg_agents.agents:
         agent.noise.sigma = 1
         agent.noise.theta = 0.5
-        agent.noise.dt = 1
+        agent.noise.dt = 0.5
     done = [False] * n_agents
     score = 0
     while not any(done):
