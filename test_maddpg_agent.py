@@ -34,7 +34,7 @@ save_dir_render.mkdir(parents=True)
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
                            fc1=16, fc2=32, fc3=64, fc4=128, fc5=256,
-                           alpha=1e-2, beta=1e-2, scenario=scenario,
+                           alpha=1e-1, beta=1e-1, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
 memory = MultiAgentReplayBuffer(100000, critic_dims, actor_dims, 
@@ -53,7 +53,7 @@ best_score = 0
 for agent in maddpg_agents.agents:
     agent.noise_type = "param"
     agent.desired_distance = 0.7
-    agent.scalar_decay = 0.99
+    agent.scalar_decay = 0.9999
     agent.scalar = 0.05
     agent.normal_scalar = 0.25
 
@@ -89,6 +89,6 @@ for e in range(episodes):
         env.render(e, save_dir_render,"trajectory")
         logger.record(
             episode=e,
-            epsilon=maddpg_agents.agents[0].distances[-1],
+            epsilon=np.mean(maddpg_agents.agents[0].distances[-200:-1]),
             step=maddpg_agents.curr_step
         )
