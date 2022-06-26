@@ -6,7 +6,8 @@ from Agents.noise import OUActionNoise
 class Agent:
     def __init__(self, actor_dims, critic_dims, n_actions, n_agents, agent_idx, chkpt_dir,
                     alpha=0.01, beta=0.01, fc1=64, 
-                    fc2=64, fc3=128, fc4=256, fc5=512, gamma=0.95, tau=0.01):
+                    fc2=64, fc3=128, fc4=256, fc5=512, gamma=0.95, tau=0.01, noise_type="param", desired_distance=0.1, 
+                    scalar_decay=0.9, scalar=1, normal_scalar=1):
         self.gamma = gamma
         self.tau = tau
         self.n_actions = n_actions
@@ -31,13 +32,15 @@ class Agent:
 
         self.update_network_parameters(tau=1)
         self.epsilon = 1
-        self.noise_type = "param"
+        self.noise_type = noise_type
         self.distances = []
-        self.desired_distance = 0.1
-        self.scalar_decay = 0.9
-        self.scalar = 1
-        self.normal_scalar = 1
-        self.ou_noise = OUActionNoise(mu=np.zeros(n_actions), sigma=0.2, theta=0.15, dt=1e-2, x0=None)
+        self.desired_distance = desired_distance
+        self.scalar_decay = scalar_decay
+        self.scalar = scalar
+        self.normal_scalar = normal_scalar
+        self.ou_noise = OUActionNoise(size=2, mu=0, sigma=0.2, theta=0.15)
+
+        self.hyperparameters = '\n'.join(f"{key:>17}: {value}" for key, value in locals().items() if key != 'self')
 
     # def choose_action(self, observation):
     #     state = T.tensor(observation, dtype=T.float).to(self.actor.device)
@@ -114,3 +117,6 @@ class Agent:
         self.target_actor.load_checkpoint()
         self.critic.load_checkpoint()
         self.target_critic.load_checkpoint()
+
+    def __str__(self):
+        return f"\n{'#'*80}\n\nHyperparameters: \n\n{self.hyperparameters}\n\n{self.actor}\n\n{self.critic}\n\n{'#'*80}\n\n"

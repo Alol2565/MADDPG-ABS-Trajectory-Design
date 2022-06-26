@@ -57,6 +57,9 @@ for agent in maddpg_agents.agents:
     agent.desired_distance = 0.7
     agent.scalar_decay = 0.99
     agent.scalar = 0.05
+    agent.normal_scalar = 0.25
+print(maddpg_agents.agents[0])
+
 
 for e in range(episodes):
     obs = env.reset()
