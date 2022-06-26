@@ -55,8 +55,8 @@ best_score = 0
 for agent in maddpg_agents.agents:
     agent.noise_type = "param"
     agent.desired_distance = 0.01
-    agent.scalar_decay = 0.99
-    agent.scalar = 5
+    agent.scalar_decay = 0.99995
+    agent.scalar = 1
 
 for e in range(episodes):
     obs = env.reset()
