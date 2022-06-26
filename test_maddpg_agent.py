@@ -36,11 +36,11 @@ save_dir_render.mkdir(parents=True)
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
                            fc1=16, fc2=32, fc3=64, fc4=128, fc5=256,
-                           alpha=0.01, beta=0.01, scenario=scenario,
+                           alpha=1e-3, beta=1e-3, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
-memory = MultiAgentReplayBuffer(100000, critic_dims, actor_dims, 
-                        n_actions, n_agents, batch_size=1024)
+memory = MultiAgentReplayBuffer(1000000, critic_dims, actor_dims, 
+                        n_actions, n_agents, batch_size=256)
 
 logger = MetricLogger(save_dir)
 episodes = int(1.5e2)
@@ -54,9 +54,9 @@ best_score = 0
 
 for agent in maddpg_agents.agents:
     agent.noise_type = "param"
-    agent.desired_distance = 0.01
-    agent.scalar_decay = 0.99995
-    agent.scalar = 1
+    agent.desired_distance = 0.7
+    agent.scalar_decay = 0.99
+    agent.scalar = 0.05
 
 for e in range(episodes):
     obs = env.reset()
