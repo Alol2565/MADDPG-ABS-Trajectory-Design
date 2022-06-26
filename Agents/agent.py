@@ -6,8 +6,8 @@ from Agents.noise import OUActionNoise
 class Agent:
     def __init__(self, actor_dims, critic_dims, n_actions, n_agents, agent_idx, chkpt_dir,
                     alpha=0.01, beta=0.01, fc1=64, 
-                    fc2=64, fc3=128, fc4=256, fc5=512, gamma=0.95, tau=0.01, noise_type="param", desired_distance=0.1, 
-                    scalar_decay=0.9, scalar=1, normal_scalar=1):
+                    fc2=64, fc3=128, fc4=256, fc5=512, gamma=0.95, tau=0.01, noise_type="param", desired_distance=0.7, 
+                    scalar_decay=0.99, scalar=0.05, normal_scalar=0.25):
         self.gamma = gamma
         self.tau = tau
         self.n_actions = n_actions
