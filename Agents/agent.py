@@ -39,7 +39,6 @@ class Agent:
         self.scalar = scalar
         self.normal_scalar = normal_scalar
         self.ou_noise = OUActionNoise(size=2, mu=0, sigma=0.2, theta=0.15)
-
         self.hyperparameters = '\n'.join(f"{key:>17}: {value}" for key, value in locals().items() if key != 'self')
 
     # def choose_action(self, observation):
@@ -59,7 +58,7 @@ class Agent:
                 # add noise to the copy
                 self.actor_noised.add_parameter_noise(self.scalar)
                 # get the next action values from the noised actor
-                action_noised = self.actor_noised(state).cpu().data.numpy()
+                action_noised = self.actor_noised.forward(state).cpu().data.numpy()
                 # meassure the distance between the action values from the regular and 
                 # the noised actor to adjust the amount of noise that will be added next round
                 distance = np.sqrt(np.mean(np.square(actions-action_noised)))

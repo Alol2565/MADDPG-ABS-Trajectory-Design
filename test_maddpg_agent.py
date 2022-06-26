@@ -17,7 +17,6 @@ num_users = 50
 num_BSs = 2
 num_uavs = 2
 reward_weights = np.array([1, 1, 1, 1, 0, 0]) / num_users
-print('reward weights: ', reward_weights)
 env = Environment('Env-1', n_users=num_users, n_uavs=num_uavs, n_BSs=num_BSs, flight_time=200, max_user_in_obs=0, reward_weights=reward_weights)
 
 n_agents = env.num_uavs
@@ -25,7 +24,6 @@ actor_dims = []
 for i in range(n_agents):
     actor_dims.append(env.observation_space.shape[0])
 critic_dims = sum(actor_dims)
-print('Actor input dims: ', actor_dims, 'Critic input dims: ', critic_dims)
 
 n_actions = 2
 scenario = 'simple'
@@ -36,11 +34,11 @@ save_dir_render.mkdir(parents=True)
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
                            fc1=16, fc2=32, fc3=64, fc4=128, fc5=256,
-                           alpha=1e-3, beta=1e-3, scenario=scenario,
+                           alpha=1e-2, beta=1e-2, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
-memory = MultiAgentReplayBuffer(1000000, critic_dims, actor_dims, 
-                        n_actions, n_agents, batch_size=256)
+memory = MultiAgentReplayBuffer(100000, critic_dims, actor_dims, 
+                        n_actions, n_agents, batch_size=1024)
 
 logger = MetricLogger(save_dir)
 episodes = int(1.5e2)
@@ -58,8 +56,9 @@ for agent in maddpg_agents.agents:
     agent.scalar_decay = 0.99
     agent.scalar = 0.05
     agent.normal_scalar = 0.25
-print(maddpg_agents.agents[0])
 
+with open(str(save_dir) + '/hyperparams.txt', 'w') as f:
+    f.write(str(maddpg_agents.agents[0]))
 
 for e in range(episodes):
     obs = env.reset()
@@ -73,7 +72,7 @@ for e in range(episodes):
         state = obs_list_to_state_vector(obs)
         state_ = obs_list_to_state_vector(obs_)
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
-        if maddpg_agents.curr_step % 8 == 0:
+        if maddpg_agents.curr_step % 16 == 0:
             maddpg_agents.learn(memory)
         logger.log_step(sum(reward), info['num connected users'], info['avg bit rate'])
         obs = obs_
@@ -90,6 +89,6 @@ for e in range(episodes):
         env.render(e, save_dir_render,"trajectory")
         logger.record(
             episode=e,
-            epsilon=maddpg_agents.agents[0].scalar,
+            epsilon=maddpg_agents.agents[0].distances[-1],
             step=maddpg_agents.curr_step
         )
