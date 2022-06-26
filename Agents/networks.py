@@ -68,6 +68,12 @@ class ActorNetwork(nn.Module):
         pi = T.tanh(self.pi(x))
         return pi
 
+    def add_parameter_noise(self, scalar=.1):
+        self.fc1.weight.data += T.randn_like(self.fc1.weight.data) * scalar
+        self.fc2.weight.data += T.randn_like(self.fc2.weight.data) * scalar
+        self.fc3.weight.data += T.randn_like(self.fc3.weight.data) * scalar
+        self.fc4.weight.data += T.randn_like(self.fc4.weight.data) * scalar
+
     def save_checkpoint(self):
         T.save(self.state_dict(), self.chkpt_file)
 

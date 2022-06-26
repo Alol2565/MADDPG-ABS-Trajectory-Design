@@ -18,4 +18,13 @@ class OUActionNoise():
     def reset(self):
         self.x_prev = self.x0 if self.x0 is not None else np.zeros_like(self.mu)
 
+class NormalNoise():
+    def __init__(self, normal_scalar):
+        self.normal_scalar = normal_scalar
+    
+    def __call__(self):
+        return np.random.randn(1) * self.normal_scalar
+    
+
+
 

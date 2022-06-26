@@ -51,12 +51,20 @@ if evaluate:
 
 score_history = []
 best_score = 0
+
+for agent in maddpg_agents.agents:
+    agent.noise_type = "param"
+    agent.desired_distance = 0.1
+    agent.scalar_decay = 0.9
+    agent.scalar = 1
+
 for e in range(episodes):
     obs = env.reset()
-    for agent in maddpg_agents.agents:
-        agent.noise.sigma = 1
-        agent.noise.theta = 0.5
-        agent.noise.dt = 0.5
+    # for agent in maddpg_agents.agents:
+    #     agent.noise.sigma = 0.1
+    #     agent.noise.dt = 1e-2
+    #     agent.noise.theta = 0.2
+    #     agent.noise.reset()
     done = [False] * n_agents
     score = 0
     while not any(done):
@@ -82,6 +90,6 @@ for e in range(episodes):
         env.render(e, save_dir_render,"trajectory")
         logger.record(
             episode=e,
-            epsilon=maddpg_agents.agents[0].noise.sigma,
+            epsilon=1,
             step=maddpg_agents.curr_step
         )

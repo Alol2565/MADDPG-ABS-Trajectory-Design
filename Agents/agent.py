@@ -15,6 +15,9 @@ class Agent:
         
         self.actor = ActorNetwork(alpha, actor_dims, fc1, fc2, fc3, fc4, fc5, n_actions, 
                                   chkpt_dir=chkpt_dir,  name=self.agent_name+'_actor')
+
+        self.actor_noised = ActorNetwork(alpha, actor_dims, fc1, fc2, fc3, fc4, fc5, n_actions, 
+                                  chkpt_dir=chkpt_dir,  name=self.agent_name+'_actor_noised')
         self.critic = CriticNetwork(beta, critic_dims, 
                             fc1, fc2, fc3, fc4, fc5,n_agents, n_actions, 
                             chkpt_dir=chkpt_dir, name=self.agent_name+'_critic')
@@ -28,13 +31,51 @@ class Agent:
 
         self.update_network_parameters(tau=1)
         self.epsilon = 1
-        self.noise = OUActionNoise(mu=np.zeros(n_actions), sigma=0.2, theta=0.15, dt=1e-2, x0=None)
+        self.noise_type = "param"
+        self.distances = []
+        self.desired_distance = 0.1
+        self.scalar_decay = 0.9
+        self.scalar = 1
+        self.normal_scalar = 1
+        self.ou_noise = OUActionNoise(mu=np.zeros(n_actions), sigma=0.2, theta=0.15, dt=1e-2, x0=None)
 
-    def choose_action(self, observation):
+    # def choose_action(self, observation):
+    #     state = T.tensor(observation, dtype=T.float).to(self.actor.device)
+    #     actions = self.actor.forward(state)
+    #     action = actions + T.tensor(self.noise(), dtype=T.float).to(self.actor.device)
+    #     return action.detach().cpu().numpy()
+
+    def choose_action(self, observation, add_noise=True):
+        """Returns actions for given state as per current policy."""
         state = T.tensor(observation, dtype=T.float).to(self.actor.device)
-        actions = self.actor.forward(state)
-        action = actions + T.tensor(self.noise(), dtype=T.float).to(self.actor.device)
-        return action.detach().cpu().numpy()
+        actions = self.actor.forward(state).cpu().data.numpy()
+        if add_noise:
+            if self.noise_type == "param":
+                # hard copy the actor_regular to actor_noised
+                self.actor_noised.load_state_dict(self.actor.state_dict().copy())
+                # add noise to the copy
+                self.actor_noised.add_parameter_noise(self.scalar)
+                # get the next action values from the noised actor
+                action_noised = self.actor_noised(state).cpu().data.numpy()
+                # meassure the distance between the action values from the regular and 
+                # the noised actor to adjust the amount of noise that will be added next round
+                distance = np.sqrt(np.mean(np.square(actions-action_noised)))
+                # for stats and print only
+                self.distances.append(distance)
+                # adjust the amount of noise given to the actor_noised
+                if distance > self.desired_distance:
+                    self.scalar *= self.scalar_decay
+                if distance < self.desired_distance:
+                    self.scalar /= self.scalar_decay
+                # set the noised action as action
+                action = action_noised
+
+            elif self.noise_type == "ou":
+                action = actions + self.ou_noise()
+            else:
+                action = actions + np.random.randn(self.n_actions) * self.normal_scalar
+
+        return np.clip(action, -1, 1)
     
     def update_network_parameters(self, tau=None):
         if tau is None:
