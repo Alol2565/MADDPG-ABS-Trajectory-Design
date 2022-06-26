@@ -3,6 +3,12 @@ import torch as T
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import numpy as np
+
+def hidden_init(layer):
+    fan_in = layer.weight.data.size()[0]
+    lim = 1. / np.sqrt(fan_in)
+    return (-lim, lim)
 
 class CriticNetwork(nn.Module):
     def __init__(self, beta, input_dims, fc1_dims, fc2_dims, fc3_dims, fc4_dims, fc5_dims,
@@ -12,6 +18,7 @@ class CriticNetwork(nn.Module):
         self.chkpt_file = os.path.join(chkpt_dir, name)
     
         self.fc1 = nn.Linear(input_dims+n_agents*n_actions, fc1_dims)
+        # self.bn1d = nn.BatchNorm1d(fc1_dims)
         self.fc2 = nn.Linear(fc1_dims, fc2_dims)
         self.fc3 = nn.Linear(fc2_dims, fc3_dims)
         self.fc4 = nn.Linear(fc3_dims, fc4_dims)
@@ -23,8 +30,13 @@ class CriticNetwork(nn.Module):
  
         self.to(self.device)
 
+        self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
+        self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
+        self.fc3.weight.data.uniform_(*hidden_init(self.fc3))
+        self.fc4.weight.data.uniform_(-3e-3, 3e-3)
+
     def forward(self, state, action):
-        x = F.relu(self.fc1(T.cat([state, action], dim=1)))
+        x = F.relu((self.fc1(T.cat([state, action], dim=1))))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         x = F.relu(self.fc4(x))
@@ -48,10 +60,10 @@ class ActorNetwork(nn.Module):
         self.chkpt_file = os.path.join(chkpt_dir, name)
 
         self.fc1 = nn.Linear(input_dims, fc1_dims)
+        # self.bn1d = nn.BatchNorm1d(fc1_dims)
         self.fc2 = nn.Linear(fc1_dims, fc2_dims)
         self.fc3 = nn.Linear(fc2_dims, fc3_dims)
         self.fc4 = nn.Linear(fc3_dims, fc4_dims)
-        # self.fc5 = nn.Linear(fc4_dims, fc5_dims)
         self.pi = nn.Linear(fc4_dims, n_actions)
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
@@ -59,12 +71,16 @@ class ActorNetwork(nn.Module):
  
         self.to(self.device)
 
+        self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
+        self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
+        self.fc3.weight.data.uniform_(*hidden_init(self.fc3))
+        self.fc4.weight.data.uniform_(-3e-3, 3e-3)
+
     def forward(self, state):
-        x = F.relu(self.fc1(state))
+        x = F.relu((self.fc1(state)))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         x = F.relu(self.fc4(x))
-        # x = F.relu(self.fc5(x))
         pi = T.tanh(self.pi(x))
         return pi
 

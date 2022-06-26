@@ -61,9 +61,6 @@ for agent in maddpg_agents.agents:
 for e in range(episodes):
     obs = env.reset()
     # for agent in maddpg_agents.agents:
-    #     agent.noise.sigma = 0.1
-    #     agent.noise.dt = 1e-2
-    #     agent.noise.theta = 0.2
     #     agent.noise.reset()
     done = [False] * n_agents
     score = 0
