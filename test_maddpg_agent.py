@@ -17,7 +17,7 @@ num_users = 50
 num_BSs = 2
 num_uavs = 2
 reward_weights = np.array([1, 1, 1, 1, 0, 0]) / num_users
-env = Environment('Env-1', n_users=num_users, n_uavs=num_uavs, n_BSs=num_BSs, flight_time=200, max_user_in_obs=0, reward_weights=reward_weights)
+env = Environment('Env-1', n_users=num_users, n_uavs=num_uavs, n_BSs=num_BSs, flight_time=200, max_user_in_obs=5, reward_weights=reward_weights)
 
 n_agents = env.num_uavs
 actor_dims = []
@@ -25,7 +25,7 @@ for i in range(n_agents):
     actor_dims.append(env.observation_space.shape[0])
 critic_dims = sum(actor_dims)
 
-n_actions = 2
+n_actions = 1
 scenario = 'simple'
 save_dir = Path('results') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
@@ -33,8 +33,8 @@ save_dir_render = save_dir / 'render_trajectory'
 save_dir_render.mkdir(parents=True)
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
-                           fc1=16, fc2=32, fc3=64, fc4=128, fc5=256,
-                           alpha=1e-1, beta=1e-1, scenario=scenario,
+                           fc1=400, fc2=300, fc3=200, fc4=200, fc5=256,
+                           alpha=3e-5, beta=1e-4, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
 memory = MultiAgentReplayBuffer(100000, critic_dims, actor_dims, 
@@ -51,19 +51,22 @@ score_history = []
 best_score = 0
 
 for agent in maddpg_agents.agents:
-    agent.noise_type = "param"
-    agent.desired_distance = 0.7
-    agent.scalar_decay = 0.9999
+    agent.noise_type = "normal"
+    agent.desired_distance = 0.5
+    agent.scalar_decay = 0.99
     agent.scalar = 0.05
-    agent.normal_scalar = 0.25
+    agent.normal_scalar = 1
+    agent.normal_scalar_decay = 0.99995
 
 with open(str(save_dir) + '/hyperparams.txt', 'w') as f:
     f.write(str(maddpg_agents.agents[0]))
 
 for e in range(episodes):
     obs = env.reset()
-    # for agent in maddpg_agents.agents:
-    #     agent.noise.reset()
+
+    if(maddpg_agents.agents[0].noise_type == "ou"):
+        for agent in maddpg_agents.agents:
+            agent.ou_noise.reset()
     done = [False] * n_agents
     score = 0
     while not any(done):
@@ -89,6 +92,6 @@ for e in range(episodes):
         env.render(e, save_dir_render,"trajectory")
         logger.record(
             episode=e,
-            epsilon=np.mean(maddpg_agents.agents[0].distances[-200:-1]),
+            epsilon=1,
             step=maddpg_agents.curr_step
         )

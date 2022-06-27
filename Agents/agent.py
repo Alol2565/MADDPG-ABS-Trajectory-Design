@@ -39,6 +39,7 @@ class Agent:
         self.scalar = scalar
         self.normal_scalar = normal_scalar
         self.ou_noise = OUActionNoise(size=2, mu=0, sigma=0.2, theta=0.15)
+        self.normal_scalar_decay = 0.99995
         self.hyperparameters = '\n'.join(f"{key:>17}: {value}" for key, value in locals().items() if key != 'self')
 
     # def choose_action(self, observation):
@@ -50,7 +51,7 @@ class Agent:
     def choose_action(self, observation, add_noise=True):
         """Returns actions for given state as per current policy."""
         state = T.tensor(observation, dtype=T.float).to(self.actor.device)
-        actions = self.actor.forward(state).cpu().data.numpy()
+        actions = np.pi * self.actor.forward(state).cpu().data.numpy()
         if add_noise:
             if self.noise_type == "param":
                 # hard copy the actor_regular to actor_noised
@@ -77,7 +78,8 @@ class Agent:
             else:
                 action = actions + np.random.randn(self.n_actions) * self.normal_scalar
 
-        return np.clip(action, -1, 1)
+
+        return np.clip(action, -np.pi, np.pi)
     
     def update_network_parameters(self, tau=None):
         if tau is None:

@@ -30,10 +30,10 @@ class CriticNetwork(nn.Module):
  
         self.to(self.device)
 
-        self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
-        self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
-        self.fc3.weight.data.uniform_(*hidden_init(self.fc3))
-        self.fc4.weight.data.uniform_(-3e-3, 3e-3)
+        # self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
+        # self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
+        # self.fc3.weight.data.uniform_(*hidden_init(self.fc3))
+        # self.fc4.weight.data.uniform_(-3e-3, 3e-3)
 
     def forward(self, state, action):
         x = F.relu((self.fc1(T.cat([state, action], dim=1))))
@@ -71,10 +71,10 @@ class ActorNetwork(nn.Module):
  
         self.to(self.device)
 
-        self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
-        self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
-        self.fc3.weight.data.uniform_(*hidden_init(self.fc3))
-        self.fc4.weight.data.uniform_(-3e-3, 3e-3)
+        # self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
+        # self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
+        # self.fc3.weight.data.uniform_(*hidden_init(self.fc3))
+        # self.fc4.weight.data.uniform_(-3e-3, 3e-3)
 
     def forward(self, state):
         x = F.relu((self.fc1(state)))

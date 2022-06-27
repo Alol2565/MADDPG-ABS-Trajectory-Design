@@ -146,7 +146,7 @@ class Environment:
         self.total_bit_rate = 0
         self.bit_rate_each_ep = []
 
-        self.frames = np.ndarray(shape=(self.num_uavs, self.max_user_uav + 2, 3), dtype=np.float64)
+        self.frames = np.ndarray(shape=(self.num_uavs, self.max_user_uav + 1, 3), dtype=np.float64)
         self.observation_space = np.array(self.frames[0,:]).flatten()
 
     # def create_user(self, user_id):
@@ -192,9 +192,9 @@ class Environment:
         sorted_distances = np.argsort(distances)
         close_users_idx = sorted_distances[:self.max_user_uav]
         for i in range(self.max_user_uav):
-            self.frames[agent_idx][i] = self.users[close_users_idx[i]].location
+            self.frames[agent_idx][i] = self.users[close_users_idx[i]].location - self.uavs[agent_idx].location
         self.frames[agent_idx][self.max_user_uav] = self.uavs[agent_idx].location
-        self.frames[agent_idx][self.max_user_uav + 1] = self.uavs[agent_idx].velocity
+        # self.frames[agent_idx][self.max_user_uav + 1] = self.uavs[agent_idx].velocity
         return self.frames[agent_idx].flatten()
         
     def in_no_fly_zone(self, agent_location):

@@ -50,27 +50,13 @@ class UAV(SP_Node):
         self.users = []
         return self
 
-    def move(self, acceleration, delta_time:np.float64):
-        """
-        Diffrent approach can be used to define the kinematic of UAVs
-        """
-        # if(self.out_of_battery):
-        #     return self
-        # self.battery -= self.power
-        # if(self.battery < 0):
-        #     self.out_of_battery = True
-        acceleration = np.array([acceleration[0], acceleration[1], 0])
-        self.collision = False
-
-
-        for i in range(len(acceleration)):
-            if(acceleration[i] > self.max_acceleration[i]):
-                acceleration[i] = self.max_acceleration[i]
-            elif(acceleration[i] < -self.max_acceleration[i]):
-                acceleration[i] = -self.max_acceleration[i]
-
+    def move(self, angle, delta_time:np.float64):
+        angle = angle[0]
+        if(angle > np.pi or angle < -np.pi):
+            angle = 0
+        self.velocity = np.multiply(np.array([np.cos(angle),np.sin(angle), 0]), 30)
         prev_location = deepcopy(self.location)
-        self.location += np.multiply(self.velocity, delta_time) + 0.5 * np.multiply(acceleration, delta_time**2)
+        self.location += np.multiply(self.velocity, delta_time)
 
         if(not self.valid_location(self.location)):
             if(self.location[0] < self.env_borders[0][0] or self.location[0] > self.env_borders[1][0]):
@@ -80,15 +66,50 @@ class UAV(SP_Node):
                 self.velocity[1] = -self.velocity[1]
                 self.location = deepcopy(prev_location)
             self.collision = True
-
-        self.velocity += np.multiply(acceleration, delta_time)
-
-        for i in range(len(self.velocity)):
-            if(self.velocity[i] > self.max_velocity[i]):
-                self.velocity[i] = self.max_velocity[i]
-            elif(self.velocity[i] < -self.max_velocity[i]):
-                self.velocity[i] = -self.max_velocity[i]
         
         self.trajectory.append(deepcopy(self.location))
         return self
+
+
+    # def move(self, acceleration, delta_time:np.float64):
+    #     """
+    #     Diffrent approach can be used to define the kinematic of UAVs
+    #     """
+    #     # if(self.out_of_battery):
+    #     #     return self
+    #     # self.battery -= self.power
+    #     # if(self.battery < 0):
+    #     #     self.out_of_battery = True
+    #     acceleration = np.array([acceleration[0], acceleration[1], 0])
+    #     self.collision = False
+
+
+    #     for i in range(len(acceleration)):
+    #         if(acceleration[i] > self.max_acceleration[i]):
+    #             acceleration[i] = self.max_acceleration[i]
+    #         elif(acceleration[i] < -self.max_acceleration[i]):
+    #             acceleration[i] = -self.max_acceleration[i]
+
+    #     prev_location = deepcopy(self.location)
+    #     self.location += np.multiply(self.velocity, delta_time) + 0.5 * np.multiply(acceleration, delta_time**2)
+
+    #     if(not self.valid_location(self.location)):
+    #         if(self.location[0] < self.env_borders[0][0] or self.location[0] > self.env_borders[1][0]):
+    #             self.velocity[0] = -self.velocity[0]
+    #             self.location = deepcopy(prev_location)
+    #         if(self.location[1] < self.env_borders[0][1] or self.location[1] > self.env_borders[1][1]):
+    #             self.velocity[1] = -self.velocity[1]
+    #             self.location = deepcopy(prev_location)
+    #         self.collision = True
+
+    #     self.velocity += np.multiply(acceleration, delta_time)
+
+    #     for i in range(len(self.velocity)):
+    #         if(self.velocity[i] > self.max_velocity[i]):
+    #             self.velocity[i] = self.max_velocity[i]
+    #         elif(self.velocity[i] < -self.max_velocity[i]):
+    #             self.velocity[i] = -self.max_velocity[i]
+        
+    #     self.trajectory.append(deepcopy(self.location))
+    #     return self
     
