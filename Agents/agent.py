@@ -77,6 +77,7 @@ class Agent:
                 action = actions + self.ou_noise()
             else:
                 action = actions + np.random.randn(self.n_actions) * self.normal_scalar
+                self.normal_scalar *= self.normal_scalar_decay
 
 
         return np.clip(action, -np.pi, np.pi)

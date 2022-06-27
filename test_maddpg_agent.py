@@ -92,6 +92,6 @@ for e in range(episodes):
         env.render(e, save_dir_render,"trajectory")
         logger.record(
             episode=e,
-            epsilon=1,
+            epsilon=maddpg_agents.agents[0].normal_scalar,
             step=maddpg_agents.curr_step
         )
