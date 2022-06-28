@@ -85,11 +85,17 @@ class MADDPG:
             agent.critic.optimizer.zero_grad()
             critic_loss.backward(retain_graph=True)
             agent.critic.optimizer.step()
+            agent.critic.scheduler.step()
+            agent.target_critic.scheduler.step()
+            # print('lr: {0}'.format(agent.critic.optimizer.param_groups[0]['lr']))
 
             actor_loss = agent.critic.forward(states, mu).flatten()
             actor_loss = -T.mean(actor_loss)
             agent.actor.optimizer.zero_grad()
             actor_loss.backward(retain_graph=True)
             agent.actor.optimizer.step()
+            agent.actor.scheduler.step()
+            agent.target_actor.scheduler.step()
+            # print('lr: {0}'.format(agent.actor.optimizer.param_groups[0]['lr']))
             
             agent.update_network_parameters()
