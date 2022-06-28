@@ -54,7 +54,7 @@ class UAV(SP_Node):
         angle = angle[0]
         if(angle > np.pi or angle < -np.pi):
             angle = 0
-        self.velocity = np.multiply(np.array([np.cos(angle),np.sin(angle), 0]), 30)
+        self.velocity = np.multiply(np.array([np.cos(angle),np.sin(angle), 0]), 8)
         prev_location = deepcopy(self.location)
         self.location += np.multiply(self.velocity, delta_time)
 

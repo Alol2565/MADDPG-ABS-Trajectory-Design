@@ -8,6 +8,8 @@ from Env.BaseStations.uav import UAV
 import datetime
 import numpy as np
 import concurrent.futures
+from mpl_toolkits import mplot3d
+
 
 class Environment:
     def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, flight_time=3600, max_user_in_obs=5, reward_weights=np.array([1, 1, 1, 1, 1])):
@@ -441,6 +443,55 @@ class Environment:
             plt.tight_layout()
             plt.savefig(str(save_dir) + '/fig_' + str(iter), dpi=100)
             plt.clf()
+            return 
+
+        if(mode=="3d"):
+            fig = plt.figure()
+            ax = plt.axes(projection='3d')
+            # for building in self.buildings:
+            #     pts = building.points()
+            #     rectangle = plt.Rectangle(pts[0], pts[1], pts[2],color='#E2E2E2', alpha=1)
+            #     ax.plot3D.gca().add_patch(rectangle)
+            #     plt.text(building.location[0],building.location[1], building.id,
+            #         horizontalalignment='center', verticalalignment='center',
+            #         fontsize=7, color='#9B9B9B')
+
+            for i in range(self.num_uavs):
+                self.uavs[i].trajectory = np.array(self.uavs[i].trajectory)
+                ax.plot3D(self.uavs[i].trajectory[:,0], self.uavs[i].trajectory[:,1], self.uavs[i].trajectory[:,2], (0.1, i / self.num_uavs, 0.5))
+                # plt.text(uav.location[0],uav.location[1] - 3, uav.id,
+                #     horizontalalignment='center', verticalalignment='center',
+                #     fontsize=7, color='blue')
+
+            for user in self.users:
+                pt_x = user.location[0]
+                pt_y = user.location[1]
+                pt_z = user.location[2]
+                user_color = 'red'
+                if(user.connected):
+                    user_color = 'green'
+                ax.scatter3D(pt_x, pt_y, pt_z, c=user_color, marker =".", linewidths=0.05, alpha=1)
+                ax.text(user.location[0],user.location[1] - 5, user.id +' | ' + user.connected_to + ' | ' + str(user.mean_bit_rate),
+                    horizontalalignment='center', verticalalignment='center',
+                    fontsize=6, color=user_color)
+
+            for bs in self.BSs:
+                pt_x = bs.location[0]
+                pt_y = bs.location[1]
+                pt_z = bs.location[2]
+                ax.scatter3D(pt_x, pt_y, pt_z, c='black', marker ="^", linewidths=4, alpha=1)
+                ax.text(bs.location[0],bs.location[1] - 7, bs.id,
+                    horizontalalignment='center', verticalalignment='center',
+                    fontsize=7, color='black')
+
+            ax.xlim(self.MIN_X, self.MAX_X)
+            ax.ylim(self.MIN_Y, self.MAX_Y)
+            ax.zlim(self.MIN_Z, self.MAX_Z)
+            figure = ax.gcf()
+            figure.set_size_inches(16, 9.12)
+            ax.tight_layout()
+            ax.savefig(str(save_dir) + '/fig_' + str(iter), dpi=100)
+            ax.clf()
             return 
 
         """Renders the environment.

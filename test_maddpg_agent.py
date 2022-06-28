@@ -34,14 +34,14 @@ save_dir_render.mkdir(parents=True)
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
                            fc1=400, fc2=300, fc3=200, fc4=200, fc5=256,
-                           alpha=3e-5, beta=1e-4, scenario=scenario,
+                           alpha=3e-2, beta=1e-1, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
 memory = MultiAgentReplayBuffer(100000, critic_dims, actor_dims, 
                         n_actions, n_agents, batch_size=1024)
 
 logger = MetricLogger(save_dir)
-episodes = int(1.5e2)
+episodes = int(1e3)
 # logger.record_initials(len(agent.memory), agent.batch_size, agent.exploration_rate_decay, agent.burnin, agent.learn_every, agent.sync_every)
 evaluate = False
 if evaluate:
@@ -56,13 +56,21 @@ for agent in maddpg_agents.agents:
     agent.scalar_decay = 0.99
     agent.scalar = 0.05
     agent.normal_scalar = 1
-    agent.normal_scalar_decay = 0.99995
+    agent.normal_scalar_decay = 0.9999
+    agent.alpha_decay = 0.9999
+    agent.beta_decay = 0.9999
+
+learning_rate_decay = True
 
 with open(str(save_dir) + '/hyperparams.txt', 'w') as f:
     f.write(str(maddpg_agents.agents[0]))
 
 for e in range(episodes):
     obs = env.reset()
+    if(learning_rate_decay):
+        for agent in maddpg_agents.agents:
+            agent.beta *= agent.beta_decay
+            agent.alpha *= 
 
     if(maddpg_agents.agents[0].noise_type == "ou"):
         for agent in maddpg_agents.agents:
@@ -77,9 +85,9 @@ for e in range(episodes):
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
         if maddpg_agents.curr_step % 16 == 0:
             maddpg_agents.learn(memory)
-        logger.log_step(sum(reward), info['num connected users'], info['avg bit rate'])
+        logger.log_step(np.mean(reward), info['num connected users'], info['avg bit rate'])
         obs = obs_
-        score += sum(reward)
+        score += np.mean(reward)
     score_history.append(score)
     avg_score = np.mean(score_history[-10:])
     if not evaluate:

@@ -13,19 +13,21 @@ class Agent:
         self.n_actions = n_actions
         self.agent_name = 'agent_%s' % agent_idx
 
-        
+        self.alpha = alpha
+        self.beta = beta 
+
         self.actor = ActorNetwork(alpha, actor_dims, fc1, fc2, fc3, fc4, fc5, n_actions, 
                                   chkpt_dir=chkpt_dir,  name=self.agent_name+'_actor')
 
         self.actor_noised = ActorNetwork(alpha, actor_dims, fc1, fc2, fc3, fc4, fc5, n_actions, 
                                   chkpt_dir=chkpt_dir,  name=self.agent_name+'_actor_noised')
-        self.critic = CriticNetwork(beta, critic_dims, 
+        self.critic = CriticNetwork(self.beta, critic_dims, 
                             fc1, fc2, fc3, fc4, fc5,n_agents, n_actions, 
                             chkpt_dir=chkpt_dir, name=self.agent_name+'_critic')
         self.target_actor = ActorNetwork(alpha, actor_dims, fc1, fc2, fc3, fc4, fc5,n_actions,
                                         chkpt_dir=chkpt_dir, 
                                         name=self.agent_name+'_target_actor')
-        self.target_critic = CriticNetwork(beta, critic_dims, 
+        self.target_critic = CriticNetwork(self.beta, critic_dims, 
                                             fc1, fc2, fc3, fc4, fc5, n_agents, n_actions,
                                             chkpt_dir=chkpt_dir,
                                             name=self.agent_name+'_target_critic')
