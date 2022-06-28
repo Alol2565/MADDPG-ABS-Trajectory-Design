@@ -26,7 +26,7 @@ class CriticNetwork(nn.Module):
         self.q = nn.Linear(fc4_dims, 1)
 
         self.optimizer = optim.Adam(self.parameters(), lr=beta)
-        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=10, gamma=0.999)
+        self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.9)
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
  
         self.to(self.device)
@@ -48,7 +48,7 @@ class CriticNetwork(nn.Module):
 
     def save_checkpoint(self):
         self.scheduler.step()
-        print('lr: {1}'.format(self.optimizer.param_groups[0]['lr']))
+        print('lr: {0}'.format(self.optimizer.param_groups[0]['lr']))
         T.save(self.state_dict(), self.chkpt_file)
 
     def load_checkpoint(self):
@@ -70,7 +70,7 @@ class ActorNetwork(nn.Module):
         self.pi = nn.Linear(fc4_dims, n_actions)
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
-        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=10, gamma=0.999)
+        self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.9)
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
  
         self.to(self.device)
@@ -96,7 +96,7 @@ class ActorNetwork(nn.Module):
 
     def save_checkpoint(self):
         self.scheduler.step()
-        print('lr: {1}'.format(self.optimizer.param_groups[0]['lr']))
+        print('lr: {0}'.format(self.optimizer.param_groups[0]['lr']))
         T.save(self.state_dict(), self.chkpt_file)
 
     def load_checkpoint(self):

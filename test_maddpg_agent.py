@@ -34,7 +34,7 @@ save_dir_render.mkdir(parents=True)
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
                            fc1=400, fc2=300, fc3=200, fc4=200, fc5=256,
-                           alpha=3e-2, beta=1e-1, scenario=scenario,
+                           alpha=0.1, beta=1e-2, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
 memory = MultiAgentReplayBuffer(100000, critic_dims, actor_dims, 
@@ -67,10 +67,6 @@ with open(str(save_dir) + '/hyperparams.txt', 'w') as f:
 
 for e in range(episodes):
     obs = env.reset()
-    if(learning_rate_decay):
-        for agent in maddpg_agents.agents:
-            agent.beta *= agent.beta_decay
-            agent.alpha *= 
 
     if(maddpg_agents.agents[0].noise_type == "ou"):
         for agent in maddpg_agents.agents:
