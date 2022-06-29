@@ -16,7 +16,7 @@ def obs_list_to_state_vector(observation):
 num_users = 50
 num_BSs = 2
 num_uavs = 2
-reward_weights = np.array([1, 1, 1, 1, 0, 0]) / num_users
+reward_weights = np.array([10, 10, 10, 10, 0, 0]) / num_users
 env = Environment('Env-1', n_users=num_users, n_uavs=num_uavs, n_BSs=num_BSs, flight_time=200, max_user_in_obs=5, reward_weights=reward_weights)
 
 n_agents = env.num_uavs

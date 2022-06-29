@@ -27,8 +27,9 @@ class CriticNetwork(nn.Module):
         self.q = nn.Linear(fc4_dims, 1)
 
         self.optimizer = optim.Adam(self.parameters(), lr=beta)
-        self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.999)
-        self.scheduler_chpt = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.95)
+        # self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.999)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=20, gamma=0.1)
+        # self.scheduler_chpt = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.95)
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
  
         self.to(self.device)
@@ -50,7 +51,7 @@ class CriticNetwork(nn.Module):
 
     def save_checkpoint(self):
         T.save(self.state_dict(), self.chkpt_file)
-        self.scheduler_chpt.step()
+        # self.scheduler_chpt.step()
 
     def load_checkpoint(self):
         self.load_state_dict(T.load(self.chkpt_file))
@@ -71,8 +72,9 @@ class ActorNetwork(nn.Module):
         self.pi = nn.Linear(fc4_dims, n_actions)
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
-        self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.999)
-        self.scheduler_chpt = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.95)
+        # self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.999)
+        # self.scheduler_chpt = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.95)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=20, gamma=0.5)
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
  
         self.to(self.device)
@@ -100,7 +102,7 @@ class ActorNetwork(nn.Module):
         # self.scheduler.step()
         # print('lr: {0}'.format(self.optimizer.param_groups[0]['lr']))
         T.save(self.state_dict(), self.chkpt_file)
-        self.scheduler_chpt.step()
+        # self.scheduler_chpt.step()
 
     def load_checkpoint(self):
         self.load_state_dict(T.load(self.chkpt_file))
