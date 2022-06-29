@@ -34,7 +34,7 @@ save_dir_render.mkdir(parents=True)
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
                            fc1=400, fc2=300, fc3=200, fc4=200, fc5=256,
-                           alpha=0.1, beta=1e-2, scenario=scenario,
+                           alpha=1e-1, beta=1e-3, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
 memory = MultiAgentReplayBuffer(100000, critic_dims, actor_dims, 
@@ -56,9 +56,7 @@ for agent in maddpg_agents.agents:
     agent.scalar_decay = 0.99
     agent.scalar = 0.05
     agent.normal_scalar = 1
-    agent.normal_scalar_decay = 0.9999
-    agent.alpha_decay = 0.9999
-    agent.beta_decay = 0.9999
+    agent.normal_scalar_decay = 0.99992
 
 learning_rate_decay = True
 
@@ -84,6 +82,8 @@ for e in range(episodes):
         logger.log_step(np.mean(reward), info['num connected users'], info['avg bit rate'])
         obs = obs_
         score += np.mean(reward)
+    print('lr: {0}'.format(maddpg_agents.agents[0].actor.optimizer.param_groups[0]['lr']))
+    print('lr: {0}'.format(maddpg_agents.agents[0].critic.optimizer.param_groups[0]['lr']))
     score_history.append(score)
     avg_score = np.mean(score_history[-10:])
     if not evaluate:

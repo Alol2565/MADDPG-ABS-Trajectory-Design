@@ -1,4 +1,5 @@
 import os
+from pyparsing import Opt
 import torch as T
 import torch.nn as nn
 import torch.nn.functional as F
@@ -27,6 +28,7 @@ class CriticNetwork(nn.Module):
 
         self.optimizer = optim.Adam(self.parameters(), lr=beta)
         self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.999)
+        self.scheduler_chpt = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.95)
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
  
         self.to(self.device)
@@ -48,6 +50,7 @@ class CriticNetwork(nn.Module):
 
     def save_checkpoint(self):
         T.save(self.state_dict(), self.chkpt_file)
+        self.scheduler_chpt.step()
 
     def load_checkpoint(self):
         self.load_state_dict(T.load(self.chkpt_file))
@@ -96,7 +99,7 @@ class ActorNetwork(nn.Module):
         # self.scheduler.step()
         # print('lr: {0}'.format(self.optimizer.param_groups[0]['lr']))
         T.save(self.state_dict(), self.chkpt_file)
+        self.scheduler_chpt.step()
 
     def load_checkpoint(self):
         self.load_state_dict(T.load(self.chkpt_file))
-
