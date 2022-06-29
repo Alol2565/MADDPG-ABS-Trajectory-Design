@@ -82,8 +82,8 @@ for e in range(episodes):
         logger.log_step(np.mean(reward), info['num connected users'], info['avg bit rate'])
         obs = obs_
         score += np.mean(reward)
-    print('lr: {0}'.format(maddpg_agents.agents[0].actor.optimizer.param_groups[0]['lr']))
-    print('lr: {0}'.format(maddpg_agents.agents[0].critic.optimizer.param_groups[0]['lr']))
+    print('lr actor: {0} lr critic: {1}'.format(maddpg_agents.agents[0].actor.optimizer.param_groups[0]['lr'], 
+                maddpg_agents.agents[0].critic.optimizer.param_groups[0]['lr']))
     score_history.append(score)
     avg_score = np.mean(score_history[-10:])
     if not evaluate:

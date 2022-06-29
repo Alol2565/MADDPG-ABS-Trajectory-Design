@@ -72,6 +72,7 @@ class ActorNetwork(nn.Module):
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
         self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.999)
+        self.scheduler_chpt = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.95)
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
  
         self.to(self.device)
