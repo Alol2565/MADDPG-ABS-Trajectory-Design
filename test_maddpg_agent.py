@@ -34,7 +34,7 @@ save_dir_render.mkdir(parents=True)
 
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
                            fc1=400, fc2=300, fc3=200, fc4=200, fc5=256,
-                           alpha=1e-1, beta=1e-2, scenario=scenario,
+                           alpha=3e-1, beta=1e-2, scenario=scenario,
                            chkpt_dir=str(save_dir) + '/tmp/maddpg/')
 
 memory = MultiAgentReplayBuffer(100000, critic_dims, actor_dims, 

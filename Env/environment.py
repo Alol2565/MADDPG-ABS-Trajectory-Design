@@ -115,7 +115,7 @@ class Environment:
         self.num_BSs = n_BSs
         self.BSs: List[Base_Station] = self.num_BSs * [None]
         BSs_id = ['BS_' + str(i) for i in range(self.num_BSs)]
-        BSs_location = [np.array([390, -10, 20], dtype=np.float64), np.array([390, -370, 15], dtype=np.float64)] 
+        BSs_location = [np.array([390, -10, 20], dtype=np.float64), np.array([390, -370, 20], dtype=np.float64)] 
 
         """
         UAVs definition
@@ -182,10 +182,10 @@ class Environment:
         return User(id=user_id, power=1, initial_location=user_location, env_borders=self.borders)
 
     def create_base_station(self, BS_id, location):
-        return Base_Station(id=BS_id, power=1, initial_location=location)
+        return Base_Station(id=BS_id, power=1e-1, initial_location=location)
 
     def create_uav(self, uav_id, location):
-        return UAV(id=uav_id, power=1, initial_location=location, env_borders=self.borders, buildings=self.buildings)
+        return UAV(id=uav_id, power=1e-1, initial_location=location, env_borders=self.borders, buildings=self.buildings)
 
     def observe(self, agent_idx):
         distances = []
