@@ -28,7 +28,7 @@ class CriticNetwork(nn.Module):
 
         self.optimizer = optim.Adam(self.parameters(), lr=beta)
         # self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.999)
-        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=20, gamma=0.8)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=100, gamma=0.01)
         # self.scheduler_chpt = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.95)
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
  
@@ -74,7 +74,7 @@ class ActorNetwork(nn.Module):
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
         # self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.999)
         # self.scheduler_chpt = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.95)
-        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=20, gamma=0.8)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=100, gamma=0.01)
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
  
         self.to(self.device)
