@@ -182,7 +182,7 @@ class Environment:
         return User(id=user_id, power=1, initial_location=user_location, env_borders=self.borders)
 
     def create_base_station(self, BS_id, location):
-        return Base_Station(id=BS_id, power=1e-1, initial_location=location)
+        return Base_Station(id=BS_id, power=1, initial_location=location)
 
     def create_uav(self, uav_id, location):
         return UAV(id=uav_id, power=1e-1, initial_location=location, env_borders=self.borders, buildings=self.buildings)

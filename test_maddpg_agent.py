@@ -56,7 +56,7 @@ for agent in maddpg_agents.agents:
     agent.scalar_decay = 0.99
     agent.scalar = 0.05
     agent.normal_scalar = 1
-    agent.normal_scalar_decay = 0.99993
+    agent.normal_scalar_decay = 0.99995
 
 learning_rate_decay = True
 
