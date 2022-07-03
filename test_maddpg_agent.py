@@ -56,19 +56,24 @@ for agent in maddpg_agents.agents:
     agent.scalar_decay = 0.99
     agent.scalar = 0.05
     agent.normal_scalar = 1
-    agent.normal_scalar_decay = 0.99995
+    agent.normal_scalar_decay = 1
 
 learning_rate_decay = True
-
+learning_period = 32
 with open(str(save_dir) + '/hyperparams.txt', 'w') as f:
     f.write(str(maddpg_agents.agents[0]))
 
 for e in range(episodes):
     obs = env.reset()
-
-    if(maddpg_agents.agents[0].noise_type == "ou"):
+    if(maddpg_agents.agents[0].normal_scalar < 0.1):
         for agent in maddpg_agents.agents:
-            agent.ou_noise.reset()
+            agent.normal_scalar_decay = 1
+            agent.normal_scalar = 0.1
+    else:
+        if e % 10 == 0:
+            for agent in maddpg_agents.agents:
+                agent.normal_scalar *= 0.9
+        
     done = [False] * n_agents
     score = 0
     while not any(done):
@@ -77,8 +82,10 @@ for e in range(episodes):
         state = obs_list_to_state_vector(obs)
         state_ = obs_list_to_state_vector(obs_)
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
-        if maddpg_agents.curr_step % 16 == 0:
+        if maddpg_agents.curr_step % 32 == 0:
             maddpg_agents.learn(memory)
+            # if(maddpg_agents.agents[0].normal_scalar < 0.3):
+            #     learning_period *= 2 
         logger.log_step(np.mean(reward), info['num connected users'], info['avg bit rate'])
         obs = obs_
         score += np.mean(reward)
