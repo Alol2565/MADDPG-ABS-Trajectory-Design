@@ -12,13 +12,14 @@ from mpl_toolkits import mplot3d
 
 
 class Environment:
-    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, flight_time=3600, max_user_in_obs=5, reward_weights=np.array([1, 1, 1, 1, 1])):
+    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, users_zones=[3],flight_time=3600, max_user_in_obs=5, reward_weights=np.array([1, 1, 1, 1, 1])):
         self.id = id
         self.time_res = 1
         self.max_user_uav = max_user_in_obs
         self.multi_agent = n_uavs > 1
         self.flight_time = flight_time
         self.reward_weights = reward_weights
+        self.users_zones = users_zones
         """
         Space Borders
         """
@@ -160,20 +161,25 @@ class Environment:
     #     return User(id=user_id, power=1, initial_location=user_location, env_borders=self.borders)
 
     def create_user(self, user_id):
-        zone = np.random.randint(0, 2)
+        zone = np.random.choice(self.users_zones, 1)
         # zone = 0
-        if(zone == 0):
-            user_location = np.array([
-            np.random.normal((self.borders[1][0] - self.borders[0][0]) * 3 / 4, 50),
-            np.random.normal((self.borders[0][1] - self.borders[1][1]) * 3 / 4, 50),
-            1
-            ])
         if(zone == 1):
-            user_location = np.array([
-            np.random.normal((self.borders[1][0] - self.borders[0][0]) * 1 / 4, 50),
-            np.random.normal((self.borders[0][1] - self.borders[1][1]) * 3 / 4, 50),
-            1
-            ])
+            zone_x = 1 / 4
+            zone_y = 1 / 4
+        if(zone == 2):
+            zone_x = 3 / 4
+            zone_y = 1 / 4
+        if(zone == 3):
+            zone_x = 1 / 4
+            zone_y = 3 / 4
+        if(zone == 4):
+            zone_x = 3 / 4
+            zone_y = 3 / 4 
+
+        user_location = np.array([
+        np.random.normal((self.borders[1][0] - self.borders[0][0]) * zone_x, 20),
+        np.random.normal((self.borders[0][1] - self.borders[1][1]) * zone_y, 20), 1])
+
         for i in range(3):
             if user_location[i] < self.borders[0][i]:
                 user_location[i] = self.borders[0][i] / 2
@@ -185,7 +191,7 @@ class Environment:
         return Base_Station(id=BS_id, power=1, initial_location=location)
 
     def create_uav(self, uav_id, location):
-        return UAV(id=uav_id, power=1e-1, initial_location=location, env_borders=self.borders, buildings=self.buildings)
+        return UAV(id=uav_id, power=1e-2, initial_location=location, env_borders=self.borders, buildings=self.buildings)
 
     def observe(self, agent_idx):
         distances = []

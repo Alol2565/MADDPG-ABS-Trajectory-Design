@@ -14,10 +14,10 @@ def obs_list_to_state_vector(observation):
 
 # reward = [self.total_bit_rate, uav_total_bit_rate, self.connected_users, len(self.uavs[agent_idx].users), collision_reward, step_reward]
 num_users = 50
-num_BSs = 2
-num_uavs = 2
-reward_weights = np.array([10, 10, 10, 10, 0, 0]) / num_users
-env = Environment('Env-1', n_users=num_users, n_uavs=num_uavs, n_BSs=num_BSs, flight_time=200, max_user_in_obs=5, reward_weights=reward_weights)
+num_BSs = 0
+num_uavs = 3
+reward_weights = np.array([10, 10, 0, 0, 0, 0]) / num_users
+env = Environment('Env-1', n_users=num_users, n_uavs=num_uavs, n_BSs=num_BSs, users_zones=[1, 2, 3],flight_time=200, max_user_in_obs=5, reward_weights=reward_weights)
 
 n_agents = env.num_uavs
 actor_dims = []
@@ -52,20 +52,16 @@ best_score = 0
 
 for agent in maddpg_agents.agents:
     agent.noise_type = "normal"
-    agent.desired_distance = 0.5
-    agent.scalar_decay = 0.99
-    agent.scalar = 0.05
-    agent.normal_scalar = 1
+    agent.normal_scalar = np.pi/2
     agent.normal_scalar_decay = 1
 
+stop_learning = False
 learning_rate_decay = True
-learning_period = 32
-with open(str(save_dir) + '/hyperparams.txt', 'w') as f:
-    f.write(str(maddpg_agents.agents[0]))
 
 for e in range(episodes):
     obs = env.reset()
-    if(maddpg_agents.agents[0].normal_scalar < 0.1):
+    if(maddpg_agents.agents[0].normal_scalar < 0.2):
+        stop_learning = True
         for agent in maddpg_agents.agents:
             agent.normal_scalar_decay = 1
             agent.normal_scalar = 0.1
@@ -82,10 +78,8 @@ for e in range(episodes):
         state = obs_list_to_state_vector(obs)
         state_ = obs_list_to_state_vector(obs_)
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
-        if maddpg_agents.curr_step % 32 == 0:
+        if maddpg_agents.curr_step % 32 == 0 and not stop_learning:
             maddpg_agents.learn(memory)
-            # if(maddpg_agents.agents[0].normal_scalar < 0.3):
-            #     learning_period *= 2 
         logger.log_step(np.mean(reward), info['num connected users'], info['avg bit rate'])
         obs = obs_
         score += np.mean(reward)
