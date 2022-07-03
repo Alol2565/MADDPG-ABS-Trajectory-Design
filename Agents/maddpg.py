@@ -13,7 +13,7 @@ class MADDPG:
         self.n_actions = n_actions
         chkpt_dir += scenario 
         mk_chkpt_dir = Path(chkpt_dir)
-        mk_chkpt_dir.mkdir(parents=True)
+        mk_chkpt_dir.mkdir(parents=True, exist_ok=True)
         for agent_idx in range(self.n_agents):
             self.agents.append(Agent(actor_dims[agent_idx], critic_dims,  
                             n_actions, n_agents, agent_idx, alpha=alpha, beta=beta, fc1=fc1, fc2=fc2, fc3=fc3, fc4=fc4, fc5=fc5,

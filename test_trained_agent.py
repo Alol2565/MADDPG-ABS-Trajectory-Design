@@ -27,15 +27,18 @@ critic_dims = sum(actor_dims)
 
 n_actions = 1
 scenario = 'simple'
-save_dir = Path('results') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
+save_dir = Path('results') / 'Evaluate' / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
 save_dir_render = save_dir / 'render_trajectory'
 save_dir_render.mkdir(parents=True)
 
+load_dir = 'results/2022-07-03T17-03-43'
+
+
 maddpg_agents = MADDPG(actor_dims, critic_dims, n_agents, n_actions, 
                            fc1=400, fc2=300, fc3=200, fc4=200, fc5=256,
                            alpha=3e-1, beta=1e-2, scenario=scenario,
-                           chkpt_dir=str(save_dir) + '/tmp/maddpg/')
+                           chkpt_dir=load_dir + '/tmp/maddpg/')
 
 memory = MultiAgentReplayBuffer(100000, critic_dims, actor_dims, 
                         n_actions, n_agents, batch_size=1024)
@@ -43,7 +46,7 @@ memory = MultiAgentReplayBuffer(100000, critic_dims, actor_dims,
 logger = MetricLogger(save_dir)
 episodes = int(1e3)
 # logger.record_initials(len(agent.memory), agent.batch_size, agent.exploration_rate_decay, agent.burnin, agent.learn_every, agent.sync_every)
-evaluate = False
+evaluate = True
 if evaluate:
     maddpg_agents.load_checkpoint()
 
@@ -52,7 +55,7 @@ best_score = 0
 
 for agent in maddpg_agents.agents:
     agent.noise_type = "normal"
-    agent.normal_scalar = np.pi/2
+    agent.normal_scalar = 0.7
     agent.normal_scalar_decay = 1
 
 stop_learning = False
@@ -60,15 +63,15 @@ learning_rate_decay = True
 
 for e in range(episodes):
     obs = env.reset()
-    if(maddpg_agents.agents[0].normal_scalar < 0.2):
-        stop_learning = True
-        for agent in maddpg_agents.agents:
-            agent.normal_scalar_decay = 1
-            agent.normal_scalar = 0.1
-    else:
-        if e % 10 == 0:
-            for agent in maddpg_agents.agents:
-                agent.normal_scalar *= 0.95
+    # if(maddpg_agents.agents[0].normal_scalar < 0.2):
+    #     stop_learning = True
+    #     for agent in maddpg_agents.agents:
+    #         agent.normal_scalar_decay = 1
+    #         agent.normal_scalar = 0.1
+    # else:
+    #     if e % 10 == 0:
+    #         for agent in maddpg_agents.agents:
+    #             agent.normal_scalar *= 0.95
         
     done = [False] * n_agents
     score = 0
@@ -78,7 +81,7 @@ for e in range(episodes):
         state = obs_list_to_state_vector(obs)
         state_ = obs_list_to_state_vector(obs_)
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
-        if maddpg_agents.curr_step % 32 == 0 and not stop_learning:
+        if maddpg_agents.curr_step % 32 == 0 and not stop_learning and not evaluate:
             maddpg_agents.learn(memory)
         logger.log_step(np.mean(reward), info['num connected users'], info['avg bit rate'])
         obs = obs_
