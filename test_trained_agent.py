@@ -55,7 +55,7 @@ best_score = 0
 
 for agent in maddpg_agents.agents:
     agent.noise_type = "normal"
-    agent.normal_scalar = 0.7
+    agent.normal_scalar = 0.2
     agent.normal_scalar_decay = 1
 
 stop_learning = False

@@ -65,8 +65,7 @@ class UAV(SP_Node):
             if(self.location[1] < self.env_borders[0][1] or self.location[1] > self.env_borders[1][1]):
                 self.velocity[1] = -self.velocity[1]
                 self.location = deepcopy(prev_location)
-            self.collision = True
-        
+            self.collision = True   
         self.trajectory.append(deepcopy(self.location))
         return self
 

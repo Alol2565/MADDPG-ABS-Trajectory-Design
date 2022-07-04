@@ -8,11 +8,10 @@ from Env.BaseStations.uav import UAV
 import datetime
 import numpy as np
 import concurrent.futures
-from mpl_toolkits import mplot3d
 
 
 class Environment:
-    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, users_zones=[3],flight_time=3600, max_user_in_obs=5, reward_weights=np.array([1, 1, 1, 1, 1])):
+    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, users_zones=[3], users_var=30,flight_time=3600, max_user_in_obs=5, reward_weights=np.array([1, 1, 1, 1, 1])):
         self.id = id
         self.time_res = 1
         self.max_user_uav = max_user_in_obs
@@ -20,6 +19,7 @@ class Environment:
         self.flight_time = flight_time
         self.reward_weights = reward_weights
         self.users_zones = users_zones
+        self.users_var = users_var
         """
         Space Borders
         """
@@ -177,8 +177,8 @@ class Environment:
             zone_y = 3 / 4 
 
         user_location = np.array([
-        np.random.normal((self.borders[1][0] - self.borders[0][0]) * zone_x, 20),
-        np.random.normal((self.borders[0][1] - self.borders[1][1]) * zone_y, 20), 1])
+        np.random.normal((self.borders[1][0] - self.borders[0][0]) * zone_x, self.users_var),
+        np.random.normal((self.borders[0][1] - self.borders[1][1]) * zone_y, self.users_var), 1])
 
         for i in range(3):
             if user_location[i] < self.borders[0][i]:
