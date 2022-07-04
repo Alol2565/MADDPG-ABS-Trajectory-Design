@@ -17,7 +17,7 @@ num_users = 50
 num_BSs = 0
 num_uavs = 3
 reward_weights = np.array([10, 10, 0, 0, 1, 0]) / num_users
-env = Environment('Env-1', n_users=num_users, n_uavs=num_uavs, n_BSs=num_BSs, users_zones=[3, 4],flight_time=200, max_user_in_obs=5, reward_weights=reward_weights)
+env = Environment('Env-1', n_users=num_users, n_uavs=num_uavs, n_BSs=num_BSs, users_zones=[3, 4],flight_time=200, max_user_in_obs=10, reward_weights=reward_weights)
 
 n_agents = env.num_uavs
 actor_dims = []
@@ -52,7 +52,7 @@ best_score = 0
 
 for agent in maddpg_agents.agents:
     agent.noise_type = "normal"
-    agent.normal_scalar = np.pi/2
+    agent.normal_scalar = np.pi / 2
     agent.normal_scalar_decay = 1
 
 stop_learning = False
@@ -60,11 +60,11 @@ learning_rate_decay = True
 
 for e in range(episodes):
     obs = env.reset()
-    if(maddpg_agents.agents[0].normal_scalar < 0.2):
+    if(maddpg_agents.agents[0].normal_scalar < 0.25):
         stop_learning = True
         for agent in maddpg_agents.agents:
             agent.normal_scalar_decay = 1
-            agent.normal_scalar = 0.1
+            agent.normal_scalar = 0.25
     else:
         if e % 10 == 0:
             for agent in maddpg_agents.agents:
