@@ -423,16 +423,25 @@ class Environment:
                 #     horizontalalignment='center', verticalalignment='center',
                 #     fontsize=7, color='blue')
 
-            for user in self.users:
-                pt_x = user.location[0]
-                pt_y = user.location[1]
-                user_color = 'red'
-                if(user.connected):
-                    user_color = 'green'
-                plt.scatter(pt_x, pt_y, c=user_color, marker =".", linewidths=0.05, alpha=1)
-                plt.text(user.location[0],user.location[1] - 5, user.id +' | ' + user.connected_to + ' | ' + str(user.mean_bit_rate),
+            # for user in self.users:
+            #     pt_x = user.location[0]
+            #     pt_y = user.location[1]
+            #     user_color = 'red'
+            #     if(user.connected):
+            #         user_color = 'green'
+            #     plt.scatter(pt_x, pt_y, c=user_color, marker =".", linewidths=0.05, alpha=1)
+            #     plt.text(user.location[0],user.location[1] - 5, user.id +' | ' + user.connected_to + ' | ' + str(user.mean_bit_rate),
+            #         horizontalalignment='center', verticalalignment='center',
+            #         fontsize=6, color=user_color)
+            for i in range(self.num_users):
+                self.users[i].trajectory = np.array(self.users[i].trajectory)
+                plt.scatter(self.users[i].trajectory[:,0], self.users[i].trajectory[:,1], color='#E3E8F0', marker='.', linewidths=0.05, alpha=1)
+                plt.text(self.users[i].location[0],self.users[i].location[1] - 5, self.users[i].id +' | ' + self.users[i].connected_to + ' | ' + str(self.users[i].mean_bit_rate),
                     horizontalalignment='center', verticalalignment='center',
-                    fontsize=6, color=user_color)
+                    fontsize=6, color='green')
+                plt.text(self.users[i].initial_location[0],self.users[i].initial_location[1] - 5, self.users[i].id +' | ' + self.users[i].connected_to + ' | ' + str(self.users[i].mean_bit_rate),
+                    horizontalalignment='center', verticalalignment='center',
+                    fontsize=6, color='red')
 
             for bs in self.BSs:
                 pt_x = bs.location[0]

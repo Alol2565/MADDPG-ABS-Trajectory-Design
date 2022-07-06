@@ -45,9 +45,3 @@ class User_Node:
         self.location = deepcopy(self.initial_location)
         self.power = deepcopy(self.initial_power)
 
-    # def refresh_network(self):
-    #     if(self.service_provider == None):
-    #         self.connect_bset_network()
-    #     self.disconnect_network()
-    #     self.connect_bset_network()
-

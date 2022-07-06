@@ -7,12 +7,12 @@ class User(User_Node):
     def __init__(self, id: string, power: float, initial_location, env_borders):
         super().__init__(id, power, initial_location)
         self.location = deepcopy(initial_location)
-        self.initial_location = deepcopy(self.location)
+        self.initial_location =  deepcopy(initial_location)
         self.power = deepcopy(power)
         self.initial_power = deepcopy(self.power)
         self.mean_velocity = 0
-        self.sd_velocity = 0
-        self.z_scale = 0.01
+        self.sd_velocity = 3
+        self.z_scale = 0.00
         self.env_borders = env_borders
         self.request_to_connect = True
         self.connected = False
@@ -23,6 +23,8 @@ class User(User_Node):
         self.inside_building = False
         self.current_snr = 0
         self.service_provider:SP_Node = None
+        self.trajectory = []
+        self.trajectory.append(deepcopy(self.location))
 
     def __add__(self, other):
         return self.bit_rate + other.bit_rate
@@ -30,6 +32,8 @@ class User(User_Node):
     def reset(self):
         self.location = deepcopy(self.initial_location)
         self.power = deepcopy(self.initial_power)
+        self.trajectory = []
+        self.trajectory.append(deepcopy(self.location))
         self.request_to_connect = True
         self.connected = False
         self.connected_to:string = 'None'
@@ -79,8 +83,9 @@ class User(User_Node):
         prev_location = deepcopy(self.location)
         self.location += self.velocity * delta_time
         if (not self.valid_location(self.location)):
-            self.location = prev_location
+            self.location = deepcopy(prev_location)
             collision = True
+        self.trajectory.append(deepcopy(self.location))
         return self
         
         # To - Do
