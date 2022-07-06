@@ -13,11 +13,11 @@ def obs_list_to_state_vector(observation):
     return state
 
 # reward = [self.total_bit_rate, uav_total_bit_rate, self.connected_users, len(self.uavs[agent_idx].users), collision_reward, step_reward]
-num_users = 50
-num_BSs = 0
-num_uavs = 3
+num_users = 100
+num_BSs = 2
+num_uavs = 2
 reward_weights = np.array([10, 10, 0, 0, 1, 0]) / num_users
-env = Environment('Env-1', n_users=num_users, n_uavs=num_uavs, n_BSs=num_BSs, users_zones=[3, 4],flight_time=200, max_user_in_obs=10, reward_weights=reward_weights)
+env = Environment('Env-1', n_users=num_users, n_uavs=num_uavs, n_BSs=num_BSs, users_zones=[1,2,3,4],users_var=40 ,flight_time=200, max_user_in_obs=10, reward_weights=reward_weights)
 
 n_agents = env.num_uavs
 actor_dims = []
@@ -68,7 +68,7 @@ for e in range(episodes):
     else:
         if e % 10 == 0:
             for agent in maddpg_agents.agents:
-                agent.normal_scalar *= 0.95
+                agent.normal_scalar *= 0.85
         
     done = [False] * n_agents
     score = 0
@@ -78,7 +78,7 @@ for e in range(episodes):
         state = obs_list_to_state_vector(obs)
         state_ = obs_list_to_state_vector(obs_)
         memory.store_transition(obs, state, actions, reward, obs_, state_, done)
-        if maddpg_agents.curr_step % 32 == 0 and not stop_learning:
+        if maddpg_agents.curr_step % 16 == 0 and not stop_learning:
             maddpg_agents.learn(memory)
         logger.log_step(np.mean(reward), info['num connected users'], info['avg bit rate'])
         obs = obs_

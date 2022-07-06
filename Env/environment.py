@@ -11,7 +11,7 @@ import concurrent.futures
 
 
 class Environment:
-    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, users_zones=[3], users_var=30,flight_time=3600, max_user_in_obs=5, reward_weights=np.array([1, 1, 1, 1, 1])):
+    def __init__(self, id, n_users=10, n_uavs=1, n_BSs=0, users_zones=[3], users_var=40,flight_time=3600, max_user_in_obs=5, reward_weights=np.array([1, 1, 1, 1, 1])):
         self.id = id
         self.time_res = 1
         self.max_user_uav = max_user_in_obs
