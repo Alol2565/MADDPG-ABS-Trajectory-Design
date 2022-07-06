@@ -13,9 +13,9 @@ def obs_list_to_state_vector(observation):
     return state
 
 # reward = [self.total_bit_rate, uav_total_bit_rate, self.connected_users, len(self.uavs[agent_idx].users), collision_reward, step_reward]
-num_users = 10
-num_BSs = 0
-num_uavs = 1
+num_users = 100
+num_BSs = 2
+num_uavs = 2
 users_zones=[1,2,3,4]
 users_var=40
 max_user_in_obs=10
